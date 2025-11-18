@@ -4,7 +4,11 @@ import { useState } from 'react';
 import Landing from './pages/Landing';
 import ShoppingPage from './pages/ShoppingPage';
 import CollectionsPage from './pages/CollectionsPage';
-import ProductPage from './pages/ProductPage'
+import ProductPage from './pages/ProductPage';
+import DonorDashboard from './pages/DonorDashboard';
+import RecipientDashboard from './pages/RecipientDashboard';
+import VolunteerDashboard from './pages/VolunteerDashboard';
+import AdminDashboard from './pages/AdminDashboard';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 
 function App() {
@@ -34,7 +38,10 @@ function App() {
         <Route path="/shop" element={<ShoppingPage/>} />
         <Route path="/shop/collection/:category"  element={<CollectionsPage/>} />
         <Route path="/shop/collection/:category/:product/:productid"  element={<ProductPage/>} />
-        {/* Add other routes here */}
+        <Route path="/dashboard/donor" element={<DonorDashboard/>} />
+        <Route path="/dashboard/recipient" element={<RecipientDashboard/>} />
+        <Route path="/dashboard/volunteer" element={<VolunteerDashboard/>} />
+        <Route path="/dashboard/admin" element={<AdminDashboard/>} />
       </Routes>
     </Router>
   );

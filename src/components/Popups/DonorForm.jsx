@@ -1,6 +1,7 @@
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import axios from 'axios';
 import { useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
 import * as Yup from 'yup';
 import countyData from '../../counties';
 import businessCategories from '../../business';
@@ -13,12 +14,18 @@ import { AuthContext } from '../../context/AuthContext';
 
 function DonorForm({ handleSwitch }) {
   const { userToken } = useContext(AuthContext);
+  const navigate = useNavigate();
 
   const validationSchema = Yup.object({
     firstName: Yup.string().required('First name is required'),
     lastName: Yup.string().required('Last name is required'),
+    email: Yup.string().email('Invalid email').required('Email is required'),
+    idNo: Yup.string().required('ID number is required'),
+    gender: Yup.string().required('Gender is required'),
+    address: Yup.string().required('Address is required'),
     title: Yup.string().required('Title is required'),
     company: Yup.string().required('Company name is required'),
+    typeOfCompany: Yup.string().required('Type of company is required'),
     phoneNumber: Yup.string().matches(
       /^(\+?\d{1,4}[-.\s]?|\(\d{1,4}\)\s?)?(\d{1,4}[-.\s]?){1,4}\d{1,4}$/,
       'Invalid phone number',)
@@ -36,6 +43,22 @@ function DonorForm({ handleSwitch }) {
     { value: 'Ms.', label: 'Ms.' },
     { value: 'Dr.', label: 'Dr.' },
     { value: 'Prof.', label: 'Prof.' },    
+  ];
+
+  const genderOptions = [
+    { value: 'Male', label: 'Male' },
+    { value: 'Female', label: 'Female' },
+    { value: 'Other', label: 'Other' },
+  ];
+
+  const companyTypeOptions = [
+    { value: 'Restaurant', label: 'Restaurant' },
+    { value: 'Retail', label: 'Retail' },
+    { value: 'Grocery Store', label: 'Grocery Store' },
+    { value: 'Catering', label: 'Catering' },
+    { value: 'Hotel', label: 'Hotel' },
+    { value: 'Manufacturing', label: 'Manufacturing' },
+    { value: 'Other', label: 'Other' },
   ];
   
   
@@ -84,27 +107,39 @@ function DonorForm({ handleSwitch }) {
         const formdata = {
             first_name: values.firstName,
             last_name: values.lastName,
+            email: values.email,
+            id_no: values.idNo,
             phone_number: values.phoneNumber,
-            title: values.title,
+            gender: values.gender,
+            address: values.address,
             company: values.company,
+            type_of_company: values.typeOfCompany,
             services_interested_in: values.businessCategory,
             participating_locations: values.counties,
         }
+        
+        // Get token from localStorage
+        const token = localStorage.getItem('token');
+        
         const response = await axios.post('http://127.0.0.1:8000/donors/', formdata, {
           headers: {
-            "Authorization": `Bearer ${userToken.token}`
+            "Authorization": `Bearer ${token}`
         }
         });
 
-        if (!response.ok) {
-            throw new Error('Failed to submit form');
-        }
-
-        const data = await response.json();
-        console.log('Form submitted successfully:', data);
+        console.log('Donor created successfully:', response.data);
+        
+        // Set user role to donor
+        localStorage.setItem('userRole', 'donor');
+        
         resetForm();
+        // Redirect to donor dashboard
+        navigate('/dashboard/donor');
     } catch (error) {
         console.error('Error submitting form:', error);
+        if (error.response) {
+          console.error('Error response:', error.response.data);
+        }
     }
   };
 
@@ -113,15 +148,20 @@ function DonorForm({ handleSwitch }) {
       initialValues={{
         firstName: '',
         lastName: '',
+        email: '',
+        idNo: '',
+        gender: '',
+        address: '',
         title:'',
         company:'',
+        typeOfCompany: '',
         phoneNumber:'',
         counties:[],
         businessCategory:'',
       }}
       validationSchema={validationSchema}
-      onSubmit={(values, { setSubmitting, resetForm }) => {
-        handleDonorForm(values, { resetForm });
+      onSubmit={async (values, { setSubmitting, resetForm }) => {
+        await handleDonorForm(values, { resetForm });
         setSubmitting(false);
       }}
     >
@@ -164,33 +204,84 @@ function DonorForm({ handleSwitch }) {
               <ErrorMessage name="title" component="div" className="text-red-500 text-sm mt-1 text-left" />
             </div>
             <div className="w-1/2">
-              <Field
-                type="text"
-                name="company"
-                placeholder="Company"
-                className="mt-1 block bg-emerald-50 w-full px-3 py-4 border border-gray-100 rounded-md shadow-sm focus:outline-none focus:ring-secondary focus:border-secondary sm:text-sm"
+            <Select
+                name="gender"
+                options={genderOptions}
+                styles={customSelectStyles}
+                className="mt-1 block bg-emerald-50 rounded-md w-full shadow-sm"
+                classNamePrefix="Gender"
+                placeholder="Select gender"
+                onChange={(selectedOption) => setFieldValue('gender', selectedOption.value)}
               />
-              <ErrorMessage name="company" component="div" className="text-red-500 text-sm mt-1 text-left" />
+              <ErrorMessage name="gender" component="div" className="text-red-500 text-sm mt-1 text-left" />
             </div>
           </div>
         </div>
         <div className="mb-4">
+          <Field
+            type="email"
+            name="email"
+            placeholder="Email Address"
+            className="mt-1 block bg-emerald-50 w-full px-3 py-4 border border-gray-100 rounded-md shadow-sm focus:outline-none focus:ring-secondary focus:border-secondary sm:text-sm"
+          />
+          <ErrorMessage name="email" component="div" className="text-red-500 text-sm mt-1 text-left" />
+        </div>
+        <div className="mb-4">
+          <Field
+            type="text"
+            name="idNo"
+            placeholder="ID Number"
+            className="mt-1 block bg-emerald-50 w-full px-3 py-4 border border-gray-100 rounded-md shadow-sm focus:outline-none focus:ring-secondary focus:border-secondary sm:text-sm"
+          />
+          <ErrorMessage name="idNo" component="div" className="text-red-500 text-sm mt-1 text-left" />
+        </div>
+        <div className="mb-4">
+          <Field
+            type="text"
+            name="address"
+            placeholder="Physical Address"
+            className="mt-1 block bg-emerald-50 w-full px-3 py-4 border border-gray-100 rounded-md shadow-sm focus:outline-none focus:ring-secondary focus:border-secondary sm:text-sm"
+          />
+          <ErrorMessage name="address" component="div" className="text-red-500 text-sm mt-1 text-left" />
+        </div>
+        <div className="mb-4">
           <div className="flex space-x-4">
-            <div className="w-full">
-            <PhoneInput
-                  placeholder="Contact Number"
-                  defaultCountry="KE" // Set your default country here
-                  value={values.phoneNumber}
-                  onChange={(phoneNumber) => setFieldValue('phoneNumber', phoneNumber)}
-                  inputProps={{
-                      name: 'phoneNumber',
-                      required: true,
-                      autoFocus: true,
-                  }}
+            <div className="w-1/2">
+              <Field
+                type="text"
+                name="company"
+                placeholder="Company Name"
+                className="mt-1 block bg-emerald-50 w-full px-3 py-4 border border-gray-100 rounded-md shadow-sm focus:outline-none focus:ring-secondary focus:border-secondary sm:text-sm"
               />
-              <ErrorMessage name="phoneNumber" component="div" className="text-red-500 text-sm mt-1 text-left" />
+              <ErrorMessage name="company" component="div" className="text-red-500 text-sm mt-1 text-left" />
+            </div>
+            <div className="w-1/2">
+            <Select
+                name="typeOfCompany"
+                options={companyTypeOptions}
+                styles={customSelectStyles}
+                className="mt-1 block bg-emerald-50 rounded-md w-full shadow-sm"
+                classNamePrefix="Company Type"
+                placeholder="Select company type"
+                onChange={(selectedOption) => setFieldValue('typeOfCompany', selectedOption.value)}
+              />
+              <ErrorMessage name="typeOfCompany" component="div" className="text-red-500 text-sm mt-1 text-left" />
             </div>
           </div>
+        </div>
+        <div className="mb-4">
+          <PhoneInput
+            placeholder="Contact Number"
+            defaultCountry="KE"
+            value={values.phoneNumber}
+            onChange={(phoneNumber) => setFieldValue('phoneNumber', phoneNumber)}
+            inputProps={{
+                name: 'phoneNumber',
+                required: true,
+                autoFocus: true,
+            }}
+          />
+          <ErrorMessage name="phoneNumber" component="div" className="text-red-500 text-sm mt-1 text-left" />
         </div>
         <hr className='w-full mb-4 mt-4'/>
         <div className="mb-8">
