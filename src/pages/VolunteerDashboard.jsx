@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { FaUser } from 'react-icons/fa';
+
 
 function VolunteerDashboard() {
   const navigate = useNavigate();
@@ -10,66 +12,66 @@ function VolunteerDashboard() {
 
   useEffect(() => {
     const token = localStorage.getItem('token');
-
-    if (!token) {
-      navigate('/');
-      return;
+    if (token) {
+      fetchVolunteerData(token);
+    } else {
+      setLoading(false);
     }
+  }, []);
 
-    fetchVolunteerData(token);
-  }, [navigate]);
-
-  const fetchVolunteerData = async (token) => {
+  async function fetchVolunteerData(token) {
     try {
       setLoading(true);
-      
-      // Fetch volunteer profile - backend returns volunteer for current authenticated user
       const volunteerResponse = await axios.get(
         `http://127.0.0.1:8000/volunteers/`,
         {
           headers: { Authorization: `Bearer ${token}` }
         }
       );
-      
       if (volunteerResponse.data && volunteerResponse.data.length > 0) {
         setVolunteer(volunteerResponse.data[0]);
       }
       setLoading(false);
     } catch (err) {
-      console.error('Error fetching volunteer data:', err);
       setError(err.response?.data?.detail || 'Failed to load dashboard data');
       setLoading(false);
     }
-  };
+  }
 
-  const handleLogout = () => {
+  function handleLogout() {
     localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    localStorage.removeItem('userToken');
     navigate('/');
-  };
+  }
 
+  // Loading spinner (optional, can be simplified)
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-green-900 via-emerald-900 to-teal-900 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-700 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading dashboard...</p>
+          <div className="relative">
+            <div className="animate-spin rounded-full h-20 w-20 border-b-4 border-green-700 mx-auto"></div>
+            <div className="absolute inset-0 rounded-full h-20 w-20 border-t-4 border-emerald-600 animate-ping mx-auto"></div>
+          </div>
+          <p className="mt-6 text-lg font-semibold text-gray-100">Loading your dashboard...</p>
         </div>
       </div>
     );
   }
 
+  // Error state (optional, can be styled similarly)
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="bg-white p-8 rounded-lg shadow-md max-w-md w-full">
-          <div className="text-red-600 text-center">
-            <p className="text-lg font-semibold mb-2">Error</p>
-            <p>{error}</p>
+      <div className="min-h-screen bg-gradient-to-br from-green-900 via-emerald-900 to-teal-900 flex items-center justify-center p-4">
+        <div className="bg-white p-10 rounded-3xl shadow-2xl max-w-md w-full border border-green-900">
+          <div className="text-center">
+            <div className="bg-green-100 rounded-full p-4 w-20 h-20 mx-auto mb-4">
+              <FaUser className="w-12 h-12 text-green-900 mx-auto" />
+            </div>
+            <p className="text-2xl font-bold mb-3 text-green-900">Oops! Something went wrong</p>
+            <p className="text-emerald-600 mb-6">{error}</p>
             <button
               onClick={handleLogout}
-              className="mt-4 bg-emerald-700 text-white px-6 py-2 rounded hover:bg-emerald-800"
+              className="bg-green-800 hover:bg-emerald-700 text-white px-8 py-3 rounded-xl font-semibold shadow-md transition-all duration-200"
             >
               Return to Home
             </button>
@@ -79,166 +81,73 @@ function VolunteerDashboard() {
     );
   }
 
+  // Main dashboard style (matches Recipient Dashboard reference)
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-emerald-700 text-white shadow-lg">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl font-bold">Volunteer Dashboard</h1>
-              {volunteer && (
-                <p className="text-emerald-100 mt-1">
-                  Welcome, {volunteer.first_name} {volunteer.last_name}
-                </p>
-              )}
-            </div>
-            <button
-              onClick={handleLogout}
-              className="bg-white text-emerald-700 px-6 py-2 rounded-lg font-semibold hover:bg-emerald-50 transition"
-            >
-              Logout
-            </button>
+    <div className="min-h-screen bg-gradient-to-br from-green-900 via-emerald-900 to-teal-900">
+      <header className="flex items-center justify-between px-8 py-6 max-w-full">
+        <div className="flex items-center space-x-4">
+          <div className="bg-green-800 rounded-xl p-3 flex items-center justify-center">
+            <FaUser className="h-8 w-8 text-white" />
+          </div>
+          <div>
+            <h1 className="text-2xl md:text-3xl font-extrabold text-white">Volunteer Dashboard</h1>
+            <p className="text-emerald-100 text-base mt-1">Welcome to your dashboard</p>
           </div>
         </div>
+        <button
+          onClick={handleLogout}
+          className="border border-emerald-200 text-white px-6 py-2 rounded-lg font-semibold hover:bg-green-800 hover:border-emerald-300 transition-all duration-200 flex items-center space-x-2"
+        >
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+          </svg>
+          <span>Logout</span>
+        </button>
       </header>
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Profile Section */}
-        {volunteer && (
-          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">Your Profile</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <div>
-                <p className="text-gray-600 text-sm">First Name</p>
-                <p className="font-semibold text-gray-800">{volunteer.first_name}</p>
+      <main className="flex items-center justify-center min-h-[70vh] px-2">
+        <div className="bg-[#f4fcfa] w-full max-w-5xl rounded-2xl shadow-xl p-8 md:p-16 flex flex-col items-center">
+          {volunteer ? (
+            <>
+              <div className="bg-green-100 rounded-full p-8 w-32 h-32 flex items-center justify-center mb-6">
+                <FaUser className="h-16 w-16 text-green-900" />
               </div>
-              <div>
-                <p className="text-gray-600 text-sm">Last Name</p>
-                <p className="font-semibold text-gray-800">{volunteer.last_name}</p>
+              <h2 className="text-2xl md:text-3xl font-bold text-green-900 mb-2">Welcome, {volunteer.first_name}!</h2>
+              <p className="text-emerald-700 text-lg mb-6">Thank you for volunteering. Here is your profile information:</p>
+              <div className="w-full max-w-xl grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <div>
+                  <p className="text-base font-semibold text-green-900 mb-1">Full Name</p>
+                  <p className="text-lg text-emerald-900 mb-3">{volunteer.first_name} {volunteer.last_name}</p>
+                  <p className="text-base font-semibold text-green-900 mb-1">Email</p>
+                  <p className="text-lg text-emerald-900 mb-3 break-all">{volunteer.email}</p>
+                  <p className="text-base font-semibold text-green-900 mb-1">Phone</p>
+                  <p className="text-lg text-emerald-900 mb-3">{volunteer.phone_number}</p>
+                </div>
+                <div>
+                  <p className="text-base font-semibold text-green-900 mb-1">Location</p>
+                  <p className="text-lg text-emerald-900 mb-3">{volunteer.location}</p>
+                  <p className="text-base font-semibold text-green-900 mb-1">Skills</p>
+                  <p className="text-lg text-emerald-900 mb-3">{volunteer.skills?.join(', ') || 'N/A'}</p>
+                  <p className="text-base font-semibold text-green-900 mb-1">Gender</p>
+                  <p className="text-lg text-emerald-900 mb-3">{volunteer.gender}</p>
+                </div>
               </div>
-              <div>
-                <p className="text-gray-600 text-sm">Email</p>
-                <p className="font-semibold text-gray-800">{volunteer.email}</p>
+            </>
+          ) : (
+            <>
+              <div className="bg-green-100 rounded-full p-8 w-32 h-32 flex items-center justify-center mb-6">
+                <FaUser className="h-16 w-16 text-green-900" />
               </div>
-              <div>
-                <p className="text-gray-600 text-sm">Phone Number</p>
-                <p className="font-semibold text-gray-800">{volunteer.phone_number}</p>
-              </div>
-              <div>
-                <p className="text-gray-600 text-sm">Gender</p>
-                <p className="font-semibold text-gray-800">{volunteer.gender}</p>
-              </div>
-              <div>
-                <p className="text-gray-600 text-sm">ID Number</p>
-                <p className="font-semibold text-gray-800">{volunteer.id_no}</p>
-              </div>
-              <div className="md:col-span-2">
-                <p className="text-gray-600 text-sm">Address</p>
-                <p className="font-semibold text-gray-800">{volunteer.address}</p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <div className="flex items-center">
-              <div className="flex-shrink-0 bg-emerald-100 rounded-lg p-3">
-                <svg
-                  className="h-6 w-6 text-emerald-700"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-              </div>
-              <div className="ml-5">
-                <p className="text-gray-500 text-sm">Hours Volunteered</p>
-                <p className="text-2xl font-bold text-gray-800">0</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <div className="flex items-center">
-              <div className="flex-shrink-0 bg-blue-100 rounded-lg p-3">
-                <svg
-                  className="h-6 w-6 text-blue-700"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-              </div>
-              <div className="ml-5">
-                <p className="text-gray-500 text-sm">Tasks Completed</p>
-                <p className="text-2xl font-bold text-gray-800">0</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <div className="flex items-center">
-              <div className="flex-shrink-0 bg-orange-100 rounded-lg p-3">
-                <svg
-                  className="h-6 w-6 text-orange-700"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-                  />
-                </svg>
-              </div>
-              <div className="ml-5">
-                <p className="text-gray-500 text-sm">People Helped</p>
-                <p className="text-2xl font-bold text-gray-800">0</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Upcoming Tasks */}
-        <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">Upcoming Tasks</h2>
-          <div className="text-center py-12">
-            <svg
-              className="mx-auto h-12 w-12 text-gray-400"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-              />
-            </svg>
-            <p className="mt-4 text-gray-600">No upcoming tasks</p>
-            <p className="text-sm text-gray-500 mt-2">
-              Check back later for new volunteer opportunities
-            </p>
-          </div>
+              <h2 className="text-2xl md:text-3xl font-bold text-green-900 mb-2">No Profile Found</h2>
+              <p className="text-emerald-700 text-lg mb-6 text-center">Please complete your volunteer profile to access your dashboard.</p>
+              <button
+                onClick={() => navigate('/')}
+                className="bg-green-800 hover:bg-emerald-700 text-white px-8 py-3 rounded-lg font-bold shadow-md transition-all duration-200"
+              >
+                Complete Profile
+              </button>
+            </>
+          )}
         </div>
       </main>
     </div>
