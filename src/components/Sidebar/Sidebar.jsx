@@ -1,13 +1,12 @@
 import React from "react";
-import Link from "next/link";
-import { useRouter } from "next/router";
+import { Link, useLocation } from "react-router-dom";
 
-import NotificationDropdown from "components/Dropdowns/NotificationDropdown.jsx";
-import UserDropdown from "components/Dropdowns/UserDropdown.jsx";
+import NotificationDropdown from "../Dropdowns/NotificationDropdown.jsx";
+import UserDropdown from "../Dropdowns/UserDropdown.jsx";
 
 export default function Sidebar() {
   const [collapseShow, setCollapseShow] = React.useState("hidden");
-  const router = useRouter();
+  const location = useLocation();
   return (
     <>
       <nav className="md:left-0 md:block md:fixed md:top-0 md:bottom-0 md:overflow-y-auto md:flex-row md:flex-nowrap md:overflow-hidden shadow-xl bg-white flex flex-wrap items-center justify-between relative md:w-64 z-10 py-4 px-6">
@@ -21,13 +20,12 @@ export default function Sidebar() {
             <i className="fas fa-bars"></i>
           </button>
           {/* Brand */}
-          <Link href="/">
-            <a
-              href="#pablo"
-              className="md:block text-left md:pb-2 text-slate-600 mr-0 inline-block whitespace-nowrap text-sm uppercase font-bold p-4 px-0"
+          <Link to="/">
+            <span
+              className="md:block text-left md:pb-2 text-slate-600 mr-0 inline-block whitespace-nowrap text-sm uppercase font-bold p-4 px-0 cursor-pointer"
             >
-              Notus NextJS
-            </a>
+              Sustainashare
+            </span>
           </Link>
           {/* User */}
           <ul className="md:hidden items-center flex flex-wrap list-none">
@@ -49,13 +47,12 @@ export default function Sidebar() {
             <div className="md:min-w-full md:hidden block pb-4 mb-4 border-b border-solid border-slate-200">
               <div className="flex flex-wrap">
                 <div className="w-6/12">
-                  <Link href="/">
-                    <a
-                      href="#pablo"
-                      className="md:block text-left md:pb-2 text-slate-600 mr-0 inline-block whitespace-nowrap text-sm uppercase font-bold p-4 px-0"
+                  <Link to="/">
+                    <span
+                      className="md:block text-left md:pb-2 text-slate-600 mr-0 inline-block whitespace-nowrap text-sm uppercase font-bold p-4 px-0 cursor-pointer"
                     >
-                      Notus NextJS
-                    </a>
+                      Sustainashare
+                    </span>
                   </Link>
                 </div>
                 <div className="w-6/12 flex justify-end">
@@ -90,98 +87,94 @@ export default function Sidebar() {
 
             <ul className="md:flex-col md:min-w-full flex flex-col list-none">
               <li className="items-center">
-                <Link href="/admin/dashboard">
-                  <a
-                    href="#pablo"
+                <Link to="/dashboard/admin">
+                  <span
                     className={
-                      "text-xs uppercase py-3 font-bold block " +
-                      (router.pathname.indexOf("/admin/dashboard") !== -1
-                        ? "text-lightBlue-500 hover:text-lightBlue-600"
+                      "text-xs uppercase py-3 font-bold block cursor-pointer " +
+                      (location.pathname.indexOf("/dashboard/admin") !== -1
+                        ? "text-blue-500 hover:text-blue-600"
                         : "text-slate-700 hover:text-slate-500")
                     }
                   >
                     <i
                       className={
                         "fas fa-tv mr-2 text-sm " +
-                        (router.pathname.indexOf("/admin/dashboard") !== -1
+                        (location.pathname.indexOf("/dashboard/admin") !== -1
                           ? "opacity-75"
                           : "text-slate-300")
                       }
                     ></i>{" "}
                     Dashboard
-                  </a>
+                  </span>
                 </Link>
               </li>
 
               <li className="items-center">
-                <Link href="/admin/settings">
-                  <a
-                    href="#pablo"
+                <Link to="/dashboard/settings">
+                  <span
                     className={
-                      "text-xs uppercase py-3 font-bold block " +
-                      (router.pathname.indexOf("/admin/settings") !== -1
-                        ? "text-lightBlue-500 hover:text-lightBlue-600"
+                      "text-xs uppercase py-3 font-bold block cursor-pointer " +
+                      (location.pathname.indexOf("/dashboard/settings") !== -1
+                        ? "text-blue-500 hover:text-blue-600"
                         : "text-slate-700 hover:text-slate-500")
                     }
                   >
                     <i
                       className={
                         "fas fa-tools mr-2 text-sm " +
-                        (router.pathname.indexOf("/admin/settings") !== -1
+                        (location.pathname.indexOf("/dashboard/settings") !== -1
                           ? "opacity-75"
                           : "text-slate-300")
                       }
                     ></i>{" "}
                     Settings
-                  </a>
+                  </span>
                 </Link>
               </li>
 
               <li className="items-center">
-                <Link href="/admin/tables">
-                  <a
-                    href="#pablo"
+                <Link to="/dashboard/tables">
+                  <span
                     className={
-                      "text-xs uppercase py-3 font-bold block " +
-                      (router.pathname.indexOf("/admin/tables") !== -1
-                        ? "text-lightBlue-500 hover:text-lightBlue-600"
+                      "text-xs uppercase py-3 font-bold block cursor-pointer " +
+                      (location.pathname.indexOf("/dashboard/tables") !== -1
+                        ? "text-blue-500 hover:text-blue-600"
                         : "text-slate-700 hover:text-slate-500")
                     }
                   >
                     <i
                       className={
                         "fas fa-table mr-2 text-sm " +
-                        (router.pathname.indexOf("/admin/tables") !== -1
+                        (location.pathname.indexOf("/dashboard/tables") !== -1
                           ? "opacity-75"
                           : "text-slate-300")
                       }
                     ></i>{" "}
                     Tables
-                  </a>
+                  </span>
                 </Link>
               </li>
 
               <li className="items-center">
-                <Link href="/admin/maps">
-                  <a
-                    href="#pablo"
+                <Link to="/dashboard/maps">
+                  <span
                     className={
-                      "text-xs uppercase py-3 font-bold block " +
-                      (router.pathname.indexOf("/admin/maps") !== -1
-                        ? "text-lightBlue-500 hover:text-lightBlue-600"
+                      "text-xs uppercase py-3 font-bold block cursor-pointer " +
+                      (location.pathname.indexOf("/dashboard/maps") !== -1
+                        ? "text-blue-500 hover:text-blue-600"
                         : "text-slate-700 hover:text-slate-500")
                     }
                   >
                     <i
                       className={
                         "fas fa-map-marked mr-2 text-sm " +
-                        (router.pathname.indexOf("/admin/maps") !== -1
+                        (location.pathname.indexOf("/dashboard/maps") !== -1
                           ? "opacity-75"
                           : "text-slate-300")
                       }
                     ></i>{" "}
                     Maps
-                  </a>
+                  </span>
                 </Link>
               </li>
             </ul>
@@ -196,26 +189,20 @@ export default function Sidebar() {
 
             <ul className="md:flex-col md:min-w-full flex flex-col list-none md:mb-4">
               <li className="items-center">
-                <Link href="/auth/login">
-                  <a
-                    href="#pablo"
-                    className="text-slate-700 hover:text-slate-500 text-xs uppercase py-3 font-bold block"
-                  >
+                <Link to="/auth/login">
+                  <span className="text-slate-700 hover:text-slate-500 text-xs uppercase py-3 font-bold block cursor-pointer">
                     <i className="fas fa-fingerprint text-slate-400 mr-2 text-sm"></i>{" "}
                     Login
-                  </a>
+                  </span>
                 </Link>
               </li>
 
               <li className="items-center">
-                <Link href="/auth/register">
-                  <a
-                    href="#pablo"
-                    className="text-slate-700 hover:text-slate-500 text-xs uppercase py-3 font-bold block"
-                  >
+                <Link to="/auth/register">
+                  <span className="text-slate-700 hover:text-slate-500 text-xs uppercase py-3 font-bold block cursor-pointer">
                     <i className="fas fa-clipboard-list text-slate-300 mr-2 text-sm"></i>{" "}
                     Register
-                  </a>
+                  </span>
                 </Link>
               </li>
             </ul>
@@ -230,26 +217,20 @@ export default function Sidebar() {
 
             <ul className="md:flex-col md:min-w-full flex flex-col list-none md:mb-4">
               <li className="items-center">
-                <Link href="/landing">
-                  <a
-                    href="#pablo"
-                    className="text-slate-700 hover:text-slate-500 text-xs uppercase py-3 font-bold block"
-                  >
+                <Link to="/landing">
+                  <span className="text-slate-700 hover:text-slate-500 text-xs uppercase py-3 font-bold block cursor-pointer">
                     <i className="fas fa-newspaper text-slate-400 mr-2 text-sm"></i>{" "}
                     Landing Page
-                  </a>
+                  </span>
                 </Link>
               </li>
 
               <li className="items-center">
-                <Link href="/profile">
-                  <a
-                    href="#pablo"
-                    className="text-slate-700 hover:text-slate-500 text-xs uppercase py-3 font-bold block"
-                  >
+                <Link to="/profile">
+                  <span className="text-slate-700 hover:text-slate-500 text-xs uppercase py-3 font-bold block cursor-pointer">
                     <i className="fas fa-user-circle text-slate-400 mr-2 text-sm"></i>{" "}
                     Profile Page
-                  </a>
+                  </span>
                 </Link>
               </li>
             </ul>

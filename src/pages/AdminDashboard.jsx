@@ -1,393 +1,326 @@
-import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import React from 'react';
+
+function StatCard({ title, value, icon, color }) {
+  // Color map for icon backgrounds
+  const colorMap = {
+    'border-emerald-400': 'bg-emerald-100 text-emerald-600',
+    'border-yellow-400': 'bg-yellow-100 text-yellow-600',
+    'border-blue-400': 'bg-blue-100 text-blue-600',
+    'border-pink-400': 'bg-pink-100 text-pink-600',
+  };
+  return (
+    <div
+      className={`flex flex-col items-center justify-center rounded-2xl shadow-xl p-7 w-full border-0 bg-white/60 backdrop-blur-md transition-transform hover:-translate-y-1 hover:shadow-2xl duration-200`}
+      style={{ boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.10)' }}
+    >
+      <div className={`w-14 h-14 flex items-center justify-center rounded-full mb-3 text-3xl font-bold shadow ${colorMap[color] || 'bg-gray-100 text-gray-600'}`}>{icon}</div>
+      <div className="text-3xl font-extrabold text-gray-900 drop-shadow-sm mb-1">{value}</div>
+      <div className="uppercase tracking-wide text-xs font-bold text-gray-500 mb-1">{title}</div>
+      <div className={`h-1 w-10 rounded-full mt-2 ${color}`}></div>
+    </div>
+  );
+}
+
+function ActivityItem({ icon, text, time, color }) {
+  return (
+    <div className="flex items-center gap-3 py-2 border-b last:border-b-0">
+      <span className={`inline-flex items-center justify-center w-8 h-8 rounded-full ${color}`}>{icon}</span>
+      <span className="flex-1 text-gray-700">{text}</span>
+      <span className="text-xs text-gray-400 whitespace-nowrap">{time}</span>
+    </div>
+  );
+}
+
+function TopDonorsTable({ donors }) {
+  return (
+    <div className="bg-white rounded-xl shadow p-6">
+      <h2 className="text-lg font-bold text-yellow-700 mb-4">Top Donors</h2>
+      <table className="min-w-full text-sm">
+        <thead>
+          <tr>
+            <th className="px-2 py-1 text-left">Donor</th>
+            <th className="px-2 py-1 text-left">Total Donated</th>
+          </tr>
+        </thead>
+        <tbody>
+          {donors.map((d, i) => (
+            <tr key={i} className="border-b last:border-b-0">
+              <td className="px-2 py-1 font-semibold text-green-800">{d.name}</td>
+              <td className="px-2 py-1">{d.total}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function MiniStatCard({ title, value, icon, color }) {
+  return (
+    <div className={`flex items-center gap-3 bg-white/80 rounded-lg shadow p-4 border-l-4 ${color}`}>
+      <span className="text-2xl">{icon}</span>
+      <div>
+        <div className="text-lg font-bold text-gray-800">{value}</div>
+        <div className="text-xs text-gray-500 font-semibold uppercase tracking-wide">{title}</div>
+      </div>
+    </div>
+  );
+}
+
+function RecentUsersList({ users }) {
+  return (
+    <div className="bg-white rounded-xl shadow p-6">
+      <h2 className="text-lg font-bold text-emerald-900 mb-4">Recent Users</h2>
+      <ul className="space-y-3">
+        {users.map((user, i) => (
+          <li key={i} className="border-l-4 border-emerald-400 pl-4">
+            <div className="font-semibold text-green-800">{user.name}</div>
+            <div className="text-xs text-gray-400">{user.email}</div>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function DonationsTrendChart({ data }) {
+  // data: array of { day, value }
+  const max = Math.max(...data.map(d => d.value), 1);
+  return (
+    <div className="bg-white rounded-xl shadow p-6 flex flex-col items-center">
+      <div className="text-lg font-bold text-yellow-700 mb-2">Donations Trend (7d)</div>
+      <svg width="120" height="40" viewBox="0 0 120 40">
+        {data.map((point, i, arr) =>
+          i === 0 ? null : (
+            <line
+              key={i}
+              x1={((i - 1) * 120) / 6}
+              y1={40 - (arr[i - 1].value / max) * 35}
+              x2={(i * 120) / 6}
+              y2={40 - (point.value / max) * 35}
+              stroke="#eab308"
+              strokeWidth="2"
+            />
+          )
+        )}
+      </svg>
+      <div className="flex justify-between w-full text-xs text-gray-400 mt-1">
+        {data.map((d, i) => (
+          <span key={i}>{d.day.slice(5)}</span>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 function AdminDashboard() {
-      // Example activity feed (combine donations, reviews, contacts)
-      const [activityFeed, setActivityFeed] = useState([]);
-
-      useEffect(() => {
-        // Example: Combine donations, reviews, contacts for activity feed (mocked for now)
-        const feed = [];
-        donations.slice(0, 3).forEach(d => feed.push({
-          type: 'Donation',
-          message: `Donation of ${d.quantity} ${d.food_item} by Donor ${d.donor_id}`,
-          date: d.created_at || ''
-        }));
-        reviews.slice(0, 3).forEach(r => feed.push({
-          type: 'Review',
-          message: `Review: "${r.title}" (${r.rating}★)`,
-          date: r.created_at || ''
-        }));
-        contacts.slice(0, 3).forEach(c => feed.push({
-          type: 'Contact',
-          message: `Contact from ${c.name}: ${c.message.substring(0, 30)}...`,
-          date: c.created_at || ''
-        }));
-        setActivityFeed(feed.sort((a, b) => (b.date || '').localeCompare(a.date || '')));
-      }, [donations, reviews, contacts]);
-    // New state for reviews, contacts, users
-    const [reviews, setReviews] = useState([]);
-    const [contacts, setContacts] = useState([]);
-    const [users, setUsers] = useState([]);
-    const [topDonors, setTopDonors] = useState([]);
-    const [userGrowth, setUserGrowth] = useState([]);
-
-    // Fetch recent reviews, contacts, users, top donors, user growth
-    useEffect(() => {
-      // Example: Fetch recent reviews
-      axios.get('http://127.0.0.1:8000/reviews/user/1') // Replace '1' with admin or aggregate endpoint
-        .then(res => setReviews(res.data.slice(-5).reverse()))
-        .catch(() => setReviews([]));
-
-      // Example: Fetch recent contacts (assuming endpoint exists)
-      axios.get('http://127.0.0.1:8000/contact/')
-        .then(res => setContacts(res.data.slice(-5).reverse()))
-        .catch(() => setContacts([]));
-
-      // Example: Fetch users (assuming endpoint exists)
-      // axios.get('http://127.0.0.1:8000/users/')
-      //   .then(res => setUsers(res.data))
-      //   .catch(() => setUsers([]));
-
-      // Example: Fetch top donors (assuming endpoint exists)
-      // axios.get('http://127.0.0.1:8000/donors/top')
-      //   .then(res => setTopDonors(res.data))
-      //   .catch(() => setTopDonors([]));
-
-      // Example: Fetch user growth (assuming endpoint exists)
-      // axios.get('http://127.0.0.1:8000/users/growth')
-      //   .then(res => setUserGrowth(res.data))
-      //   .catch(() => setUserGrowth([]));
-    }, []);
-  const navigate = useNavigate();
-  const [stats, setStats] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [donors, setDonors] = useState([]);
-  const [recipients, setRecipients] = useState([]);
-  const [donations, setDonations] = useState([]);
-  const [showDonations, setShowDonations] = useState(false);
-  const [showDonors, setShowDonors] = useState(false);
-  const [showRecipients, setShowRecipients] = useState(false);
-
-
-  const fetchAdminData = async (token) => {
-    try {
-      setLoading(true);
-      // Fetch all data for admin statistics
-      const [donorsRes, recipientsRes, volunteersRes, donationsRes] = await Promise.all([
-        axios.get('http://127.0.0.1:8000/donors/', {
-          headers: { Authorization: `Bearer ${token}` }
-        }),
-        axios.get('http://127.0.0.1:8000/recipients/', {
-          headers: { Authorization: `Bearer ${token}` }
-        }),
-        axios.get('http://127.0.0.1:8000/volunteers/', {
-          headers: { Authorization: `Bearer ${token}` }
-        }),
-        axios.get('http://127.0.0.1:8000/donations/', {
-          headers: { Authorization: `Bearer ${token}` }
-        })
-      ]);
-
-      const donations = donationsRes.data || [];
-      const activeDonations = donations.filter(d => d.status === 'Active' || d.status === 'Pending').length;
-      const completedDonations = donations.filter(d => d.status === 'Completed').length;
-
-      setStats({
-        totalDonors: donorsRes.data?.length || 0,
-        totalRecipients: recipientsRes.data?.length || 0,
-        totalVolunteers: volunteersRes.data?.length || 0,
-        totalDonations: donations.length,
-        activeDonations,
-        completedDonations
-      });
-      setDonors(donorsRes.data || []);
-      setRecipients(recipientsRes.data || []);
-      setDonations(donations);
-      setLoading(false);
-    } catch (err) {
-      console.error('Error fetching admin data:', err);
-      setError(err.response?.data?.detail || 'Failed to load admin data');
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      fetchAdminData(token);
-    } else {
-      // Set demo stats for viewing without login
-      setStats({
-        totalDonors: 156,
-        totalRecipients: 89,
-        totalVolunteers: 42,
-        totalDonations: 234,
-        activeDonations: 45,
-        completedDonations: 189
-      });
-      setLoading(false);
-    }
-  }, []);
-
+  // Button handlers (replace with real logic as needed)
+  const handleAddUser = () => alert('Add User clicked!');
+  const handleAddDonation = () => alert('Add Donation clicked!');
+  const handleViewReports = () => alert('View Reports clicked!');
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    localStorage.removeItem('userToken');
-    localStorage.removeItem('userRole');
-    navigate('/');
+    window.location.href = '/';
   };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 py-8 flex items-center justify-center">
-        <div className="flex flex-col items-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-green-900 border-opacity-50 mb-4"></div>
-          <span className="text-green-900 text-xl font-semibold">Loading...</span>
-        </div>
-      </div>
-    );
-  }
+  // Sample data for UI
+  const stats = [
+    { title: 'Users', value: 1280, icon: '👤', color: 'border-emerald-400' },
+    { title: 'Donors', value: 320, icon: '💸', color: 'border-yellow-400' },
+    { title: 'Recipients', value: 540, icon: '🎁', color: 'border-blue-400' },
+    { title: 'Volunteers', value: 110, icon: '🤝', color: 'border-pink-400' },
+  ];
+  // New content data
+  const miniStats = [
+    { title: 'Pending Users', value: 7, icon: '⏳', color: 'border-yellow-400' },
+    { title: 'Pending Donations', value: 3, icon: '📦', color: 'border-blue-400' },
+    { title: 'Pending Reviews', value: 2, icon: '📝', color: 'border-pink-400' },
+    { title: 'Unread Contacts', value: 5, icon: '📧', color: 'border-emerald-400' },
+  ];
+  const pendingApprovals = [
+    { type: 'User', name: 'Frank', detail: 'frank@example.com', date: '2025-11-20' },
+    { type: 'Donation', name: '10kg Maize', detail: 'by Alice', date: '2025-11-19' },
+    { type: 'Review', name: 'Review by Bob', detail: 'Donation #123', date: '2025-11-18' },
+  ];
+  const announcements = [
+    { title: 'System Maintenance', message: 'Scheduled for Nov 25, 2:00 AM - 4:00 AM UTC. Expect downtime.', date: '2025-11-19' },
+    { title: 'New Feature', message: 'Bulk user import is now available for admins.', date: '2025-11-18' },
+  ];
+  const activities = [
+    { icon: '🆕', text: 'New user registered: alice@example.com', time: '2 min ago', color: 'bg-emerald-100' },
+    { icon: '💸', text: 'Donation received: 10kg rice', time: '10 min ago', color: 'bg-yellow-100' },
+    { icon: '⭐', text: 'Review posted by John', time: '30 min ago', color: 'bg-blue-100' },
+    { icon: '🤝', text: 'Volunteer signed up: Sarah', time: '1 hr ago', color: 'bg-pink-100' },
+    { icon: '🎁', text: 'Recipient request approved', time: '2 hr ago', color: 'bg-blue-50' },
+  ];
+  const topDonors = [
+    { name: 'Alice', total: '₤500' },
+    { name: 'Bob', total: '₤350' },
+    { name: 'Carol', total: '₤300' },
+    { name: 'David', total: '₤250' },
+    { name: 'Eve', total: '₤200' },
+  ];
+  const recentUsers = [
+    { name: 'Alice', email: 'alice@example.com' },
+    { name: 'Bob', email: 'bob@example.com' },
+    { name: 'Carol', email: 'carol@example.com' },
+    { name: 'David', email: 'david@example.com' },
+    { name: 'Eve', email: 'eve@example.com' },
+  ];
+  const donationsTrend = [
+    { day: '2025-11-14', value: 2 },
+    { day: '2025-11-15', value: 4 },
+    { day: '2025-11-16', value: 3 },
+    { day: '2025-11-17', value: 6 },
+    { day: '2025-11-18', value: 5 },
+    { day: '2025-11-19', value: 7 },
+    { day: '2025-11-20', value: 8 },
+  ];
+  const recentDonations = [
+    { food: 'Rice', qty: 10, donor: 'Alice', date: '2025-11-20' },
+    { food: 'Beans', qty: 5, donor: 'Bob', date: '2025-11-19' },
+    { food: 'Maize', qty: 8, donor: 'Carol', date: '2025-11-19' },
+    { food: 'Wheat', qty: 6, donor: 'David', date: '2025-11-18' },
+    { food: 'Sugar', qty: 3, donor: 'Eve', date: '2025-11-18' },
+  ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-emerald-900 to-green-900 py-10 px-2">
+      <div className="max-w-6xl mx-auto">
+        {/* Title at the very top */}
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-10 gap-4 relative">
           <div>
-            <h1 className="text-4xl font-extrabold text-green-900 mb-2">Admin Dashboard</h1>
-            <p className="text-lg text-green-800 font-medium">Welcome, Admin! Here is an overview of the platform activity.</p>
+            <h1 className="text-4xl font-extrabold text-white mb-1">Admin Dashboard</h1>
+            <p className="text-emerald-100 text-base">Welcome, Admin! Here’s a quick overview of your system.</p>
           </div>
           <button
+            className="absolute right-0 top-0 bg-red-600 hover:bg-red-700 text-white px-5 py-2 rounded-lg font-semibold shadow transition-all md:static md:ml-auto md:mt-0"
             onClick={handleLogout}
-            className="mt-4 sm:mt-0 bg-gradient-to-r from-red-500 to-red-700 text-white px-6 py-2 rounded-lg font-semibold shadow-md hover:from-red-600 hover:to-red-800 transition-all duration-200"
+            style={{ minWidth: 110 }}
           >
             Logout
           </button>
         </div>
-        {/* Summary Cards */}
-        {stats && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
-
-              {/* Recent Reviews Section */}
-              <div className="mb-8">
-                <h2 className="text-2xl font-bold text-green-900 mb-4">Recent Reviews</h2>
-                {reviews.length === 0 ? (
-                  <div className="text-gray-500">No recent reviews found.</div>
-                ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {reviews.map((review, idx) => (
-                      <div key={review.id || idx} className="bg-white rounded-xl shadow p-4 border-l-4 border-green-400">
-                        <div className="flex items-center mb-2">
-                          <span className="text-yellow-500 font-bold mr-2">{'★'.repeat(review.rating)}</span>
-                          <span className="text-gray-700 font-semibold">{review.title}</span>
-                        </div>
-                        <div className="text-gray-600 mb-2">{review.content}</div>
-                        <div className="text-xs text-gray-400">User: {review.user_id}</div>
-                      </div>
-                    ))}
-                  </div>
-                )}
+        {/* System Health & Quick Actions */}
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8 gap-4">
+          <div className="bg-white rounded-xl shadow p-4 flex flex-col items-center min-w-[220px]">
+            <div className="text-2xl font-bold text-green-700 mb-1">System Health</div>
+            <div className="flex items-center gap-2 mb-1">
+              <span className="inline-block w-3 h-3 rounded-full bg-green-500"></span>
+              <span className="text-green-700 font-semibold">All Services Operational</span>
+            </div>
+            <div className="text-xs text-gray-400">Last checked: {new Date().toLocaleTimeString()}</div>
+          </div>
+          <div className="flex flex-wrap gap-2 mt-4 md:mt-0">
+            <button
+              className="bg-emerald-700 hover:bg-emerald-800 text-white px-5 py-2 rounded-lg font-semibold shadow transition-all"
+              onClick={handleAddUser}
+            >
+              Add User
+            </button>
+            <button
+              className="bg-yellow-600 hover:bg-yellow-700 text-white px-5 py-2 rounded-lg font-semibold shadow transition-all"
+              onClick={handleAddDonation}
+            >
+              Add Donation
+            </button>
+            <button
+              className="bg-blue-700 hover:bg-blue-800 text-white px-5 py-2 rounded-lg font-semibold shadow transition-all"
+              onClick={handleViewReports}
+            >
+              View Reports
+            </button>
+          </div>
+        </div>
+        {/* Stat Cards */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-10">
+          {stats.map((s) => (
+            <StatCard key={s.title} {...s} />
+          ))}
+        </div>
+        <div className="border-t border-emerald-100 mb-10"></div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+          {/* Activity Timeline */}
+          <div className="flex flex-col h-full">
+            <div className="bg-white rounded-xl shadow p-6 flex-1 flex flex-col">
+              <h2 className="text-lg font-bold text-emerald-900 mb-4">Recent Activity</h2>
+              <div className="flex-1 flex flex-col gap-2">
+                {activities.map((a, i) => (
+                  <ActivityItem key={i} {...a} />
+                ))}
               </div>
-
-              {/* Recent Contacts Section */}
-              <div className="mb-8">
-                <h2 className="text-2xl font-bold text-green-900 mb-4">Recent Contact Messages</h2>
-                {contacts.length === 0 ? (
-                  <div className="text-gray-500">No recent contact messages found.</div>
-                ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {contacts.map((contact, idx) => (
-                      <div key={contact.id || idx} className="bg-white rounded-xl shadow p-4 border-l-4 border-emerald-400">
-                        <div className="font-semibold text-green-800 mb-1">{contact.name}</div>
-                        <div className="text-xs text-gray-400 mb-2">{contact.email}</div>
-                        <div className="text-gray-600 mb-2">{contact.message}</div>
-                        <div className="text-xs text-gray-400">{contact.created_at}</div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* MongoDB Insights Section */}
-              <div className="mb-8">
-                <h2 className="text-2xl font-bold text-green-900 mb-4">Platform Insights</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* User Growth Example */}
-                  <div className="bg-white rounded-xl shadow p-6 border-t-4 border-blue-400">
-                    <h3 className="text-lg font-semibold text-blue-700 mb-2">User Growth (Example)</h3>
-                    {/* Replace with chart or real data if available */}
-                    <div className="text-gray-600">{userGrowth.length > 0 ? userGrowth.join(', ') : 'User growth data not available.'}</div>
-                  </div>
-                  {/* Top Donors Example */}
-                  <div className="bg-white rounded-xl shadow p-6 border-t-4 border-yellow-400">
-                    <h3 className="text-lg font-semibold text-yellow-700 mb-2">Top Donors (Example)</h3>
-                    <ul className="list-disc pl-5">
-                      {topDonors.length > 0 ? topDonors.map((donor, idx) => (
-                        <li key={donor.id || idx} className="text-gray-700">{donor.first_name} {donor.last_name} ({donor.company})</li>
-                      )) : <li className="text-gray-600">Top donors data not available.</li>}
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            <div className="bg-white rounded-2xl shadow-lg p-6 flex flex-col items-center border-t-4 border-green-600">
-              <span className="text-3xl font-bold text-green-700 mb-2">{stats.totalDonors}</span>
-              <span className="text-lg text-green-900 font-semibold">Total Donors</span>
-            </div>
-            <div className="bg-white rounded-2xl shadow-lg p-6 flex flex-col items-center border-t-4 border-emerald-600">
-              <span className="text-3xl font-bold text-emerald-700 mb-2">{stats.totalRecipients}</span>
-              <span className="text-lg text-green-900 font-semibold">Total Recipients</span>
-            </div>
-            <div className="bg-white rounded-2xl shadow-lg p-6 flex flex-col items-center border-t-4 border-teal-600">
-              <span className="text-3xl font-bold text-teal-700 mb-2">{stats.totalVolunteers}</span>
-              <span className="text-lg text-green-900 font-semibold">Total Volunteers</span>
-            </div>
-            <div className="bg-white rounded-2xl shadow-lg p-6 flex flex-col items-center border-t-4 border-yellow-500">
-              <span className="text-3xl font-bold text-yellow-600 mb-2">{stats.totalDonations}</span>
-              <span className="text-lg text-green-900 font-semibold">Total Donations</span>
-            </div>
-            <div className="bg-white rounded-2xl shadow-lg p-6 flex flex-col items-center border-t-4 border-blue-500">
-              <span className="text-3xl font-bold text-blue-700 mb-2">{stats.activeDonations}</span>
-              <span className="text-lg text-green-900 font-semibold">Active Donations</span>
-            </div>
-            <div className="bg-white rounded-2xl shadow-lg p-6 flex flex-col items-center border-t-4 border-gray-500">
-              <span className="text-3xl font-bold text-gray-700 mb-2">{stats.completedDonations}</span>
-              <span className="text-lg text-green-900 font-semibold">Completed Donations</span>
             </div>
           </div>
-        )}
-        {error ? (
-          <div className="bg-red-100 text-red-800 p-4 rounded-lg shadow mb-8">{error}</div>
-        ) : stats ? (
-          <>
-            {/* Place the detailed tables here, after the main dashboard content */}
-            <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-              {/* Donations Table */}
-              <div className="mb-8">
-                <button
-                  className="bg-gradient-to-r from-green-800 to-emerald-700 text-white px-6 py-2 rounded-lg font-semibold shadow-md transition-all duration-200 mb-2"
-                  onClick={() => setShowDonations((v) => !v)}
-                >
-                  {showDonations ? 'Hide' : 'Show'} Latest Donations
-                </button>
-                {showDonations && (
-                  <div className="overflow-x-auto bg-white rounded-2xl shadow p-4">
-                    <h2 className="text-xl font-bold text-green-900 mb-4">Latest 10 Donations</h2>
-                    <table className="min-w-full">
-                      <thead>
-                        <tr>
-                          <th className="py-2 px-4 text-left">Food Item</th>
-                          <th className="py-2 px-4 text-left">Brand</th>
-                          <th className="py-2 px-4 text-left">Description</th>
-                          <th className="py-2 px-4 text-left">Quantity</th>
-                          <th className="py-2 px-4 text-left">Price</th>
-                          <th className="py-2 px-4 text-left">Donor ID</th>
-                          <th className="py-2 px-4 text-left">Recipient ID</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {donations.slice(-10).reverse().map((don, idx) => (
-                          <tr key={don.id || idx} className="border-b last:border-b-0">
-                            <td className="py-2 px-4">{don.food_item}</td>
-                            <td className="py-2 px-4">{don.brand}</td>
-                            <td className="py-2 px-4">{don.description}</td>
-                            <td className="py-2 px-4">{don.quantity}</td>
-                            <td className="py-2 px-4">{don.price}</td>
-                            <td className="py-2 px-4">{don.donor_id}</td>
-                            <td className="py-2 px-4">{don.recipient_id}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </div>
-              {/* Donors Table */}
-              <div className="mb-8">
-                <button
-                  className="bg-gradient-to-r from-emerald-700 to-green-800 text-white px-6 py-2 rounded-lg font-semibold shadow-md transition-all duration-200 mb-2"
-                  onClick={() => setShowDonors((v) => !v)}
-                >
-                  {showDonors ? 'Hide' : 'Show'} Latest Donors
-                </button>
-                {showDonors && (
-                  <div className="overflow-x-auto bg-white rounded-2xl shadow p-4">
-                    <h2 className="text-xl font-bold text-green-900 mb-4">Latest 10 Donors</h2>
-                    <table className="min-w-full">
-                      <thead>
-                        <tr>
-                          <th className="py-2 px-4 text-left">First Name</th>
-                          <th className="py-2 px-4 text-left">Last Name</th>
-                          <th className="py-2 px-4 text-left">Email</th>
-                          <th className="py-2 px-4 text-left">Phone</th>
-                          <th className="py-2 px-4 text-left">Company</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {donors.slice(-10).reverse().map((d, idx) => (
-                          <tr key={d.id || idx} className="border-b last:border-b-0">
-                            <td className="py-2 px-4">{d.first_name}</td>
-                            <td className="py-2 px-4">{d.last_name}</td>
-                            <td className="py-2 px-4">{d.email}</td>
-                            <td className="py-2 px-4">{d.phone_number}</td>
-                            <td className="py-2 px-4">{d.company}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </div>
-              {/* Recipients Table */}
-              <div className="mb-8">
-                <button
-                  className="bg-gradient-to-r from-teal-700 to-emerald-700 text-white px-6 py-2 rounded-lg font-semibold shadow-md transition-all duration-200 mb-2"
-                  onClick={() => setShowRecipients((v) => !v)}
-                >
-                  {showRecipients ? 'Hide' : 'Show'} Latest Recipients
-                </button>
-                {showRecipients && (
-                  <div className="overflow-x-auto bg-white rounded-2xl shadow p-4">
-                    <h2 className="text-xl font-bold text-green-900 mb-4">Latest 10 Recipients</h2>
-                    <table className="min-w-full">
-                      <thead>
-                        <tr>
-                          <th className="py-2 px-4 text-left">First Name</th>
-                          <th className="py-2 px-4 text-left">Last Name</th>
-                          <th className="py-2 px-4 text-left">Email</th>
-                          <th className="py-2 px-4 text-left">Phone</th>
-                          <th className="py-2 px-4 text-left">Address</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {recipients.slice(-10).reverse().map((r, idx) => (
-                          <tr key={r.id || idx} className="border-b last:border-b-0">
-                            <td className="py-2 px-4">{r.first_name}</td>
-                            <td className="py-2 px-4">{r.last_name}</td>
-                            <td className="py-2 px-4">{r.email}</td>
-                            <td className="py-2 px-4">{r.phone_number}</td>
-                            <td className="py-2 px-4">{r.address}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </div>
-            </main>
-          </>
-        ) : (
-          <div className="bg-white rounded-3xl shadow-2xl p-16 text-center border border-gray-200">
-            <div className="bg-gradient-to-br from-gray-100 to-gray-200 rounded-full p-8 w-32 h-32 mx-auto mb-6">
-              <svg className="h-16 w-16 text-gray-500 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-              </svg>
-            </div>
-            <h3 className="text-3xl font-bold text-gray-700 mb-4">No Data Available</h3>
-            <p className="text-gray-500 text-lg mb-8">Unable to load system statistics.</p>
+          {/* Top Donors Table */}
+          <div className="flex flex-col h-full">
+            <TopDonorsTable donors={topDonors} />
           </div>
-        )}
+          {/* Recent Users List */}
+          <div className="flex flex-col h-full">
+            <RecentUsersList users={recentUsers} />
+          </div>
+        </div>
+        {/* Donations Trend Chart and Recent Feedback */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <DonationsTrendChart data={donationsTrend} />
+          <div className="flex flex-col gap-6">
+            <div className="bg-emerald-100 border-l-4 border-emerald-600 text-emerald-900 p-6 rounded-xl shadow flex flex-col justify-center items-center">
+              <span className="italic font-semibold text-lg mb-2">“Great leaders don’t set out to be a leader… they set out to make a difference. It’s never about the role – always about the goal.”</span>
+              <span className="block text-emerald-700">— Lisa Haisha</span>
+            </div>
+            {/* Recent Feedback Section */}
+            <div className="bg-white rounded-xl shadow p-6">
+              <h2 className="text-lg font-bold text-emerald-700 mb-4">Recent Feedback</h2>
+              <ul className="divide-y">
+                <li className="py-3 flex flex-col md:flex-row md:items-center md:justify-between">
+                  <div>
+                    <span className="font-bold text-gray-700">“Great donation process, very smooth!”</span>
+                    <span className="text-xs text-gray-400 ml-2">- Alice, 2025-11-20</span>
+                  </div>
+                </li>
+                <li className="py-3 flex flex-col md:flex-row md:items-center md:justify-between">
+                  <div>
+                    <span className="font-bold text-gray-700">“Appreciate the quick response from support.”</span>
+                    <span className="text-xs text-gray-400 ml-2">- Bob, 2025-11-19</span>
+                  </div>
+                </li>
+                <li className="py-3 flex flex-col md:flex-row md:items-center md:justify-between">
+                  <div>
+                    <span className="font-bold text-gray-700">“Would love to see more food variety.”</span>
+                    <span className="text-xs text-gray-400 ml-2">- Carol, 2025-11-18</span>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div className="border-t border-emerald-100 mb-10"></div>
+        {/* Announcements Only */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-10">
+          <div className="bg-white rounded-xl shadow p-6">
+            <h2 className="text-lg font-bold text-blue-700 mb-4">System Announcements</h2>
+            <ul className="divide-y">
+              {announcements.map((a, i) => (
+                <li key={i} className="py-3">
+                  <div className="font-semibold text-emerald-800">{a.title}</div>
+                  <div className="text-gray-700 mb-1">{a.message}</div>
+                  <div className="text-xs text-gray-400">{a.date}</div>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+        {/* Recent Donations List */}
+        <div className="bg-white rounded-xl shadow p-6 mt-10">
+          <h2 className="text-lg font-bold text-green-900 mb-4">Recent Donations</h2>
+          <ul className="space-y-3">
+            {recentDonations.map((don, idx) => (
+              <li key={idx} className="border-l-4 border-yellow-400 pl-4">
+                <div className="font-semibold text-yellow-800">{don.food}</div>
+                <div className="text-xs text-gray-400">Qty: {don.qty} | Donor: {don.donor} | {don.date}</div>
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div className="h-10"></div>
       </div>
     </div>
   );

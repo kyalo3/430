@@ -28,14 +28,17 @@ const initialRecipient = {
 };
 
 function RecipientDashboard() {
+    // Handler for updating a donation (redirect to update page)
+    function handleUpdateDonation(donation) {
+      window.location.href = `/update-donation/${donation.id}`;
+    }
   const [recipient, setRecipient] = useState(initialRecipient);
   const [editMode, setEditMode] = useState(false);
   const [form, setForm] = useState({ ...initialRecipient });
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
-  const [deleteLoading, setDeleteLoading] = useState(false);
-  const [deleteError, setDeleteError] = useState('');
+  // Remove delete state, not needed for update
   // Donations for this recipient (fetched from backend)
   const [donations, setDonations] = useState([]);
 
@@ -58,29 +61,38 @@ function RecipientDashboard() {
     };
     fetchDonations();
   }, [recipient.id]);
-  // Handle delete profile
-  const handleDelete = async () => {
-    if (!window.confirm('Are you sure you want to delete your profile? This action cannot be undone.')) return;
-    setDeleteLoading(true);
-    setDeleteError('');
+  // Handle update profile (button outside form)
+  const handleUpdate = async () => {
+    setLoading(true);
+    setSuccess('');
+    setError('');
     try {
       const token = localStorage.getItem('token');
       const recipientId = recipient.id;
-      await axios.delete(`http://127.0.0.1:8000/recipients/${recipientId}`,
+      const payload = {
+        first_name: form.first_name,
+        last_name: form.last_name,
+        email: form.email,
+        id_no: form.id_no,
+        phone_number: form.phone_number,
+        gender: form.gender,
+        address: form.address,
+        house_hold_size: Number(form.house_hold_size),
+        house_hold_members: form.house_hold_members,
+        disability: Boolean(form.disability)
+      };
+      await axios.put(
+        `http://127.0.0.1:8000/recipients/${recipientId}`,
+        payload,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      // Optionally, redirect or clear state after deletion
-      setSuccess('Profile deleted successfully.');
-      setRecipient(null);
-      setForm({});
+      setRecipient((prev) => ({ ...prev, ...payload }));
       setEditMode(false);
-      setTimeout(() => {
-        window.location.href = '/';
-      }, 1500);
+      setSuccess('Profile updated successfully!');
     } catch (err) {
-      setDeleteError(err.response?.data?.detail || 'Failed to delete profile');
+      setError(err.response?.data?.detail || 'Failed to update profile');
     } finally {
-      setDeleteLoading(false);
+      setLoading(false);
     }
   };
 
@@ -141,16 +153,7 @@ function RecipientDashboard() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-900 via-emerald-900 to-teal-900 py-8 px-2">
       <div className="max-w-3xl mx-auto">
-        {deleteError && (
-          <div className="bg-red-100 border-l-4 border-red-600 text-red-900 p-4 rounded-xl shadow mb-4 text-center">
-            {deleteError}
-          </div>
-        )}
-        {success === 'Profile deleted successfully.' && (
-          <div className="bg-green-100 border-l-4 border-green-600 text-green-900 p-4 rounded-xl shadow mb-4 text-center">
-            {success}
-          </div>
-        )}
+        {/* Remove delete error/success UI */}
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
           <div>
@@ -171,11 +174,11 @@ function RecipientDashboard() {
               Logout
             </button>
             <button
-              className="bg-red-700 hover:bg-red-800 text-white px-6 py-2 rounded-lg font-semibold shadow-md transition-all duration-200"
-              onClick={handleDelete}
-              disabled={deleteLoading}
+              className="bg-yellow-700 hover:bg-yellow-800 text-white px-6 py-2 rounded-lg font-semibold shadow-md transition-all duration-200"
+              onClick={handleUpdate}
+              disabled={loading}
             >
-              {deleteLoading ? 'Deleting...' : 'Delete Profile'}
+              {loading ? 'Updating...' : 'Update Profile'}
             </button>
            </div>
         </div>
@@ -335,6 +338,14 @@ function RecipientDashboard() {
                   <td className="py-2 px-4">{don.description}</td>
                   <td className="py-2 px-4">{don.quantity}</td>
                   <td className="py-2 px-4">{don.price}</td>
+                  <td className="py-2 px-4">
+                    <button
+                      className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1 rounded shadow transition-all"
+                      onClick={() => handleUpdateDonation(don)}
+                    >
+                      Update
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>

@@ -9,6 +9,7 @@ import DonorDashboard from './pages/DonorDashboard';
 import RecipientDashboard from './pages/RecipientDashboard';
 import VolunteerDashboard from './pages/VolunteerDashboard';
 import AdminDashboard from './pages/AdminDashboard';
+import Reports from './pages/Reports';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 
 function App() {
@@ -42,6 +43,7 @@ function App() {
         <Route path="/dashboard/recipient" element={<RecipientDashboard/>} />
         <Route path="/dashboard/volunteer" element={<VolunteerDashboard/>} />
         <Route path="/dashboard/admin" element={<AdminDashboard/>} />
+        <Route path="/dashboard/reports" element={<Reports/>} />
       </Routes>
     </Router>
   );
