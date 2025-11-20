@@ -1,7 +1,7 @@
 import logo from '../../assets/images/logo.png'
 import RegistrationForm from './RegistrationForm';
 import LoginForm from './LoginForm';
-import MinimalLogin from './MinimalLogin';
+// import MinimalLogin from './MinimalLogin';
 import DonorForm from './DonorForm';
 import RecipientForm from './RecipientForm';
 import VolunteerForm from './VolunteerForm';
@@ -44,10 +44,7 @@ export const AuthModal = ({ isOpen, togglePopup, popupType }) => {
         : popupType === 'register' ?
           <RegistrationForm handleSwitch = {handleSwitch}/>
         : popupType === 'login' ?
-          <>
-            <MinimalLogin />
-            {/* <LoginForm handleSwitch = {handleSwitch}/> */}
-          </>
+          <LoginForm handleSwitch = {handleSwitch}/>
         : popupType === 'recipient' ?
           <RecipientForm handleSwitch = {handleSwitch}/>
         : 
