@@ -15,22 +15,19 @@ export const AuthProvider = ({ children }) => {
   const [userRole, setUserRole] = useState(null); // 'donor', 'recipient', 'volunteer', or 'admin'
 
   // Function to handle user sign-up
-  const signUp = async (userName, email, password) => {
+  const signUp = async (userName, email, password, role) => {
     try {
-      console.log('Starting registration...', { Username: userName, Email: email });
-      
-      const response = await axios.post(`${API_URL}/users/`, { 
-        Username: userName, 
-        Email: email, 
-        Password: password 
+      console.log('Starting registration...', { username: userName, email });
+      const response = await axios.post(`${API_URL}/users/`, {
+        username: userName,
+        email: email,
+        password: password,
+        role: role
       });
-      
       console.log('Registration successful:', response.data);
-      
       console.log('Attempting auto-login with email:', email);
       await signIn(email, password);
       console.log('Auto-login successful');
-      
       setShowDonorRec(true);
     } catch (error) {
       console.error('Registration error details:', {
@@ -86,38 +83,35 @@ export const AuthProvider = ({ children }) => {
         headers: { Authorization: `Bearer ${token}` }
       };
 
-      // Check if user has a donor profile
+      // Check if user has a donor profile by calling /donors/me
+      // If found, set role to 'donor' and return
       try {
-        const donorResponse = await axios.get(`${API_URL}/donors/`, config);
-        if (donorResponse.data && donorResponse.data.length > 0) {
-          setUserRole('donor');
-          localStorage.setItem('userRole', 'donor');
-          return;
-        }
+        await axios.get(`${API_URL}/donors/me`, config);
+        setUserRole('donor');
+        localStorage.setItem('userRole', 'donor');
+        return;
       } catch (err) {
         console.log('No donor profile found');
       }
 
-      // Check if user has a recipient profile
+      // Check if user has a recipient profile by calling /recipients/me
+      // If found, set role to 'recipient' and return
       try {
-        const recipientResponse = await axios.get(`${API_URL}/recipients/`, config);
-        if (recipientResponse.data && recipientResponse.data.length > 0) {
-          setUserRole('recipient');
-          localStorage.setItem('userRole', 'recipient');
-          return;
-        }
+        await axios.get(`${API_URL}/recipients/me`, config);
+        setUserRole('recipient');
+        localStorage.setItem('userRole', 'recipient');
+        return;
       } catch (err) {
         console.log('No recipient profile found');
       }
 
-      // Check if user has a volunteer profile
+      // Check if user has a volunteer profile by calling /volunteers/me
+      // If found, set role to 'volunteer' and return
       try {
-        const volunteerResponse = await axios.get(`${API_URL}/volunteers/`, config);
-        if (volunteerResponse.data && volunteerResponse.data.length > 0) {
-          setUserRole('volunteer');
-          localStorage.setItem('userRole', 'volunteer');
-          return;
-        }
+        await axios.get(`${API_URL}/volunteers/me`, config);
+        setUserRole('volunteer');
+        localStorage.setItem('userRole', 'volunteer');
+        return;
       } catch (err) {
         console.log('No volunteer profile found');
       }

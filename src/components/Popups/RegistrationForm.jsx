@@ -24,22 +24,12 @@ function RegistrationForm({ handleSwitch }) {
   const handleSignUp = async (values, { resetForm, setSubmitting }) => {
     try {
       setErrorMessage('');
-      setSuccessMessage('Registration successful! Redirecting...');
+      setSuccessMessage('Registration successful! Please complete your profile.');
       setSubmitting(true);
-      await signUp(values.userNameReg, values.emailReg, values.passwordReg);
+      await signUp(values.userNameReg, values.emailReg, values.passwordReg, values.role);
+      // Store the selected role for use after login
+      localStorage.setItem('regRole', values.role);
       resetForm();
-      // Redirect to the selected role's dashboard after registration
-      setTimeout(() => {
-        if (values.role === 'donor') {
-          window.location.href = '/dashboard/donor';
-        } else if (values.role === 'recipient') {
-          window.location.href = '/dashboard/recipient';
-        } else if (values.role === 'volunteer') {
-          window.location.href = '/dashboard/volunteer';
-        } else {
-          window.location.href = '/';
-        }
-      }, 1000);
     } catch (error) {
       console.error("Error during signup:", error);
       let message = 'Registration failed. Please try again.';
