@@ -26,17 +26,15 @@ function LoginForm({ handleSwitch }) {
             // Wait a moment then redirect based on user role
             setTimeout(() => {
                 const role = localStorage.getItem('userRole');
-                
                 if (role === 'donor') {
-                    navigate('/dashboard/donor');
+                    window.location.href = '/dashboard/donor';
                 } else if (role === 'recipient') {
-                    navigate('/dashboard/recipient');
+                    window.location.href = '/dashboard/recipient';
                 } else if (role === 'volunteer') {
-                    navigate('/dashboard/volunteer');
+                    window.location.href = '/dashboard/volunteer';
                 } else if (role === 'admin') {
-                    navigate('/dashboard/admin');
+                    window.location.href = '/dashboard/admin';
                 } else {
-                    // No profile created yet, show donor form
                     setSuccessMessage('Login successful! Please complete your profile.');
                 }
             }, 1000);

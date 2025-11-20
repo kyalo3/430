@@ -7,6 +7,7 @@ function RegistrationForm({ handleSwitch }) {
   const { signUp, showDonorRec, currentUser } = useContext(AuthContext);
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
+  const [selectedRole, setSelectedRole] = useState('');
 
   const validationSchemaRegister = Yup.object({
     userNameReg: Yup.string().required('Username is required'),
@@ -16,30 +17,33 @@ function RegistrationForm({ handleSwitch }) {
       .min(8, 'Password must be at least 8 characters long'),
     confirmPasswordReg: Yup.string()
       .oneOf([Yup.ref('passwordReg'), null], 'Passwords must match')
-      .required('Confirm Password is required')
+      .required('Confirm Password is required'),
+    role: Yup.string().oneOf(['donor', 'recipient', 'volunteer'], 'Please select a role').required('Please select a role'),
   });
 
   const handleSignUp = async (values, { resetForm, setSubmitting }) => {
     try {
       setErrorMessage('');
-      setSuccessMessage('');
-      setSubmitting(true);
-      
-      await signUp(values.userNameReg, values.emailReg, values.passwordReg);
-      
       setSuccessMessage('Registration successful! Redirecting...');
+      setSubmitting(true);
+      await signUp(values.userNameReg, values.emailReg, values.passwordReg);
       resetForm();
-      
-      // Wait a moment before switching to donor form
+      // Redirect to the selected role's dashboard after registration
       setTimeout(() => {
-        handleSwitch('donor');
-      }, 500);
+        if (values.role === 'donor') {
+          window.location.href = '/dashboard/donor';
+        } else if (values.role === 'recipient') {
+          window.location.href = '/dashboard/recipient';
+        } else if (values.role === 'volunteer') {
+          window.location.href = '/dashboard/volunteer';
+        } else {
+          window.location.href = '/';
+        }
+      }, 1000);
     } catch (error) {
       console.error("Error during signup:", error);
       let message = 'Registration failed. Please try again.';
-      
       if (error.response?.data?.detail) {
-        // FastAPI error format
         message = typeof error.response.data.detail === 'string' 
           ? error.response.data.detail 
           : JSON.stringify(error.response.data.detail);
@@ -50,7 +54,6 @@ function RegistrationForm({ handleSwitch }) {
       } else if (error.message) {
         message = error.message;
       }
-      
       setErrorMessage(message);
       setSubmitting(false);
     }
@@ -60,17 +63,18 @@ function RegistrationForm({ handleSwitch }) {
     <Formik
       initialValues={{
         userNameReg: '',
-        emailReg: '', 
-        passwordReg: '', 
-        confirmPasswordReg: ''
+        emailReg: '',
+        passwordReg: '',
+        confirmPasswordReg: '',
+        role: '',
       }}
       validationSchema={validationSchemaRegister}
       onSubmit={async (values, { setSubmitting, resetForm }) => {
-        await handleSignUp(values, { resetForm });
+        await handleSignUp(values, { resetForm, setSubmitting });
         setSubmitting(false);
       }}
     >
-      {({ isSubmitting, isValid }) => (
+      {({ isSubmitting, isValid, values, setFieldValue }) => (
         <Form autoComplete='off'>
           {errorMessage && (
             <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
@@ -83,44 +87,54 @@ function RegistrationForm({ handleSwitch }) {
             </div>
           )}
           <div className="mb-4">
-              <Field
-                type="text"
-                name="userNameReg"
-                placeholder="Username"
-                autoComplete="off"
-                className="mt-1 bg-emerald-50 block w-full px-3 py-4 border border-gray-100 rounded-md shadow-sm focus:outline-none focus:ring-emerald-700 focus:border-emerald-700 sm:text-sm"
-              />
-              <ErrorMessage name="userNameReg" component="div" className="text-red-500 text-sm mt-1 text-left" />
+            <Field
+              type="text"
+              name="userNameReg"
+              placeholder="Username"
+              autoComplete="off"
+              className="mt-1 bg-emerald-50 block w-full px-3 py-4 border border-gray-100 rounded-md shadow-sm focus:outline-none focus:ring-emerald-700 focus:border-emerald-700 sm:text-sm"
+            />
+            <ErrorMessage name="userNameReg" component="div" className="text-red-500 text-sm mt-1 text-left" />
           </div>
           <div className="mb-4">
-              <Field
-                type="email"
-                name="emailReg"
-                placeholder="Email Address"
-                autoComplete="off"
-                className="mt-1 block w-full px-3 py-4 bg-emerald-50 border border-gray-100 rounded-md shadow-sm focus:outline-none focus:ring-emerald-700 focus:border-emerald-700 sm:text-sm"
-              />
-              <ErrorMessage name="emailReg" component="div" className="text-red-500 text-sm mt-1 text-left" />
+            <Field
+              type="email"
+              name="emailReg"
+              placeholder="Email Address"
+              autoComplete="off"
+              className="mt-1 block w-full px-3 py-4 bg-emerald-50 border border-gray-100 rounded-md shadow-sm focus:outline-none focus:ring-emerald-700 focus:border-emerald-700 sm:text-sm"
+            />
+            <ErrorMessage name="emailReg" component="div" className="text-red-500 text-sm mt-1 text-left" />
           </div>
           <div className="mb-4">
-              <Field
-                type="password"
-                name="passwordReg"
-                placeholder="Password"
-                autoComplete="off"
-                className="mt-1 block w-full px-3 py-4 bg-emerald-50 border border-gray-100 rounded-md shadow-sm focus:outline-none focus:ring-emerald-700 focus:border-emerald-700 sm:text-sm"
-              />
-              <ErrorMessage name="passwordReg" component="div" className="text-red-500 text-sm mt-1 text-left" />
+            <Field
+              type="password"
+              name="passwordReg"
+              placeholder="Password"
+              autoComplete="off"
+              className="mt-1 block w-full px-3 py-4 bg-emerald-50 border border-gray-100 rounded-md shadow-sm focus:outline-none focus:ring-emerald-700 focus:border-emerald-700 sm:text-sm"
+            />
+            <ErrorMessage name="passwordReg" component="div" className="text-red-500 text-sm mt-1 text-left" />
           </div>
           <div className="mb-4">
-              <Field
-                type="password"
-                name="confirmPasswordReg"
-                placeholder="Confirm Password"
-                autoComplete="off"
-                className="mt-1 block w-full px-3 py-4 bg-emerald-50 border border-gray-100 rounded-md shadow-sm focus:outline-none focus:ring-emerald-700 focus:border-emerald-700 sm:text-sm"
-              />
-              <ErrorMessage name="confirmPasswordReg" component="div" className="text-red-500 text-sm mt-1 text-left" />
+            <Field
+              type="password"
+              name="confirmPasswordReg"
+              placeholder="Confirm Password"
+              autoComplete="off"
+              className="mt-1 block w-full px-3 py-4 bg-emerald-50 border border-gray-100 rounded-md shadow-sm focus:outline-none focus:ring-emerald-700 focus:border-emerald-700 sm:text-sm"
+            />
+            <ErrorMessage name="confirmPasswordReg" component="div" className="text-red-500 text-sm mt-1 text-left" />
+          </div>
+          <div className="mb-4">
+            <label className="block text-emerald-800 font-semibold mb-2">Select Your Category</label>
+            <Field as="select" name="role" className="block w-full px-3 py-3 border border-emerald-200 rounded-md bg-emerald-50 focus:outline-none focus:ring-emerald-700 focus:border-emerald-700">
+              <option value="">-- Choose a category --</option>
+              <option value="donor">Donor</option>
+              <option value="recipient">Recipient</option>
+              <option value="volunteer">Volunteer</option>
+            </Field>
+            <ErrorMessage name="role" component="div" className="text-red-500 text-sm mt-1 text-left" />
           </div>
           <button
             type="submit"
