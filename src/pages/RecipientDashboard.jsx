@@ -42,6 +42,47 @@ function RecipientDashboard() {
   // Donations for this recipient (fetched from backend)
   const [donations, setDonations] = useState([]);
 
+  // Donation request state
+  const [requestForm, setRequestForm] = useState({
+    item: '',
+    custom: '',
+  });
+  const [requestLoading, setRequestLoading] = useState(false);
+  const [requestSuccess, setRequestSuccess] = useState('');
+  const [requestError, setRequestError] = useState('');
+
+  // Handle donation request form changes
+  const handleRequestChange = (e) => {
+    setRequestForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  // Handle donation request submit
+  const handleRequestSubmit = async (e) => {
+    e.preventDefault();
+    setRequestLoading(true);
+    setRequestSuccess('');
+    setRequestError('');
+    try {
+      const token = localStorage.getItem('token');
+      // You may need to adjust the endpoint to match your backend
+      await axios.post(
+        `http://127.0.0.1:8000/donation-requests/`,
+        {
+          recipient_id: recipient.id,
+          item: requestForm.item,
+          custom: requestForm.custom,
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setRequestSuccess('Request submitted successfully!');
+      setRequestForm({ item: '', custom: '' });
+    } catch (err) {
+      setRequestError(err.response?.data?.detail || 'Failed to submit request');
+    } finally {
+      setRequestLoading(false);
+    }
+  };
+
   // Fetch donations for this recipient from backend
   useEffect(() => {
     const fetchDonations = async () => {
@@ -284,6 +325,7 @@ function RecipientDashboard() {
           </div>
         </div>
 
+
         {/* Recent Aid Section */}
         <div className="bg-white rounded-2xl shadow p-6 mb-8">
           <h3 className="text-xl font-bold text-green-900 mb-4">Recent Aid Received</h3>
@@ -298,6 +340,50 @@ function RecipientDashboard() {
               </li>
             ))}
           </ul>
+        </div>
+
+        {/* Request Donation Section */}
+        <div className="bg-white rounded-2xl shadow p-6 mb-8">
+          <h3 className="text-xl font-bold text-green-900 mb-4">Request a Donation</h3>
+          <form onSubmit={handleRequestSubmit} className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+            <div>
+              <label className="block text-green-900 font-semibold mb-1">Select Item</label>
+              <select
+                name="item"
+                value={requestForm.item}
+                onChange={handleRequestChange}
+                className="w-full border rounded p-2"
+              >
+                <option value="">-- Choose an item --</option>
+                <option value="Food">Food</option>
+                <option value="Clothes">Clothes</option>
+                <option value="Medicine">Medicine</option>
+                <option value="Hygiene Products">Hygiene Products</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-green-900 font-semibold mb-1">Custom Request (optional)</label>
+              <input
+                name="custom"
+                value={requestForm.custom}
+                onChange={handleRequestChange}
+                className="w-full border rounded p-2"
+                placeholder="Describe your need..."
+              />
+            </div>
+            <div>
+              <button
+                type="submit"
+                className="bg-green-800 hover:bg-emerald-700 text-white px-6 py-2 rounded-lg font-semibold shadow-md transition-all duration-200 w-full"
+                disabled={requestLoading}
+              >
+                {requestLoading ? 'Submitting...' : 'Request'}
+              </button>
+            </div>
+          </form>
+          {requestSuccess && <div className="bg-green-100 border-l-4 border-green-600 text-green-900 p-2 rounded-xl shadow mt-4 text-center">{requestSuccess}</div>}
+          {requestError && <div className="bg-red-100 border-l-4 border-red-600 text-red-900 p-2 rounded-xl shadow mt-4 text-center">{requestError}</div>}
         </div>
 
         {/* Events Attended Section */}
@@ -316,42 +402,6 @@ function RecipientDashboard() {
         </div>
       </div>
 
-      {/* Donations Section */}
-      <div className="bg-white rounded-2xl shadow p-6 mt-8">
-        <h3 className="text-xl font-bold text-green-900 mb-4">Your Donations</h3>
-        <div className="overflow-x-auto">
-          <table className="min-w-full bg-white rounded-xl">
-            <thead>
-              <tr>
-                <th className="py-2 px-4 text-left text-emerald-800">Food Item</th>
-                <th className="py-2 px-4 text-left text-emerald-800">Brand</th>
-                <th className="py-2 px-4 text-left text-emerald-800">Description</th>
-                <th className="py-2 px-4 text-left text-emerald-800">Quantity</th>
-                <th className="py-2 px-4 text-left text-emerald-800">Price</th>
-              </tr>
-            </thead>
-            <tbody>
-              {donations.map((don, idx) => (
-                <tr key={idx} className="border-b last:border-b-0">
-                  <td className="py-2 px-4">{don.food_item}</td>
-                  <td className="py-2 px-4">{don.brand}</td>
-                  <td className="py-2 px-4">{don.description}</td>
-                  <td className="py-2 px-4">{don.quantity}</td>
-                  <td className="py-2 px-4">{don.price}</td>
-                  <td className="py-2 px-4">
-                    <button
-                      className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1 rounded shadow transition-all"
-                      onClick={() => handleUpdateDonation(don)}
-                    >
-                      Update
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
     </div>
   );
 }

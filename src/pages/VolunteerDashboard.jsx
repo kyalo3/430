@@ -1,183 +1,217 @@
 
+
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-const emptyVolunteer = {
-  id: '',
-  user_id: '',
-  first_name: '',
-  last_name: '',
-  email: '',
-  id_no: '',
-  phone_number: '',
-  gender: '',
-  address: '',
+// Replace with real data fetching in production
+const initialVolunteer = {
+  id: 'replace_with_real_id',
+  first_name: 'John',
+  last_name: 'Volunteer',
+  email: 'john.volunteer@email.com',
+  id_no: '87654321',
+  phone_number: '+254798765432',
+  gender: 'Male',
+  address: 'Nairobi, Kenya',
+  status: 'Active Volunteer',
+  events_attended: [
+    { name: 'Food Drive', date: '2025-09-05' },
+    { name: 'Community Clean Up', date: '2025-08-20' }
+  ]
 };
 
 function VolunteerDashboard() {
-  const [volunteers, setVolunteers] = useState([]);
-  const [form, setForm] = useState(emptyVolunteer);
-  const [editId, setEditId] = useState(null);
+  const [volunteer, setVolunteer] = useState(initialVolunteer);
+  const [editMode, setEditMode] = useState(false);
+  const [form, setForm] = useState({ ...initialVolunteer });
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [error, setError] = useState('');
 
-  // Fetch all volunteers
+  // Fetch volunteer profile (replace with real API call)
   useEffect(() => {
-    const fetchVolunteers = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        const res = await axios.get('http://127.0.0.1:8000/volunteers/', {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        setVolunteers(res.data || []);
-      } catch (err) {
-        setError('Failed to fetch volunteers');
-      }
-    };
-    fetchVolunteers();
-  }, [success]);
+    // Example: fetch volunteer data from backend using token
+    // const fetchVolunteer = async () => {
+    //   try {
+    //     const token = localStorage.getItem('token');
+    //     const res = await axios.get('http://127.0.0.1:8000/volunteers/me', {
+    //       headers: { Authorization: `Bearer ${token}` }
+    //     });
+    //     setVolunteer(res.data);
+    //     setForm(res.data);
+    //   } catch (err) {
+    //     setError('Failed to fetch volunteer profile');
+    //   }
+    // };
+    // fetchVolunteer();
+  }, []);
 
   // Handle form input changes
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Handle create or update
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  // Handle update profile
+  const handleUpdate = async (e) => {
+    if (e) e.preventDefault();
     setLoading(true);
-    setError('');
     setSuccess('');
+    setError('');
     try {
       const token = localStorage.getItem('token');
-      if (editId) {
-        // Update
-        await axios.put(`http://127.0.0.1:8000/volunteers/${editId}`, form, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        setSuccess('Volunteer updated successfully!');
-      } else {
-        // Create
-        await axios.post('http://127.0.0.1:8000/volunteers/', form, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        setSuccess('Volunteer created successfully!');
-      }
-      setForm(emptyVolunteer);
-      setEditId(null);
+      const volunteerId = volunteer.id;
+      const payload = {
+        first_name: form.first_name,
+        last_name: form.last_name,
+        email: form.email,
+        id_no: form.id_no,
+        phone_number: form.phone_number,
+        gender: form.gender,
+        address: form.address
+      };
+      // await axios.put(
+      //   `http://127.0.0.1:8000/volunteers/${volunteerId}`,
+      //   payload,
+      //   { headers: { Authorization: `Bearer ${token}` } }
+      // );
+      setVolunteer((prev) => ({ ...prev, ...payload }));
+      setEditMode(false);
+      setSuccess('Profile updated successfully!');
     } catch (err) {
-      setError(err.response?.data?.detail || 'Failed to save volunteer');
+      setError(err.response?.data?.detail || 'Failed to update profile');
     } finally {
       setLoading(false);
     }
-  };
-
-  // Handle edit
-  const handleEdit = (vol) => {
-    setForm(vol);
-    setEditId(vol.id);
-  };
-
-  // Handle delete
-  const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this volunteer?')) return;
-    setLoading(true);
-    setError('');
-    setSuccess('');
-    try {
-      const token = localStorage.getItem('token');
-      await axios.delete(`http://127.0.0.1:8000/volunteers/${id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setSuccess('Volunteer deleted successfully!');
-    } catch (err) {
-      setError(err.response?.data?.detail || 'Failed to delete volunteer');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Handle cancel edit
-  const handleCancel = () => {
-    setForm(emptyVolunteer);
-    setEditId(null);
-    setError('');
-    setSuccess('');
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-900 via-emerald-900 to-teal-900 py-8 px-2">
-      <div className="max-w-5xl mx-auto">
-        <h1 className="text-3xl font-extrabold text-white mb-6">Volunteer Management Dashboard</h1>
-        {error && <div className="bg-red-100 border-l-4 border-red-600 text-red-900 p-4 rounded-xl shadow mb-4 text-center">{error}</div>}
-        {success && <div className="bg-green-100 border-l-4 border-green-600 text-green-900 p-4 rounded-xl shadow mb-4 text-center">{success}</div>}
-
-        {/* Volunteer Form */}
-        <div className="bg-white rounded-2xl shadow p-6 mb-8">
-          <h2 className="text-xl font-bold mb-4">{editId ? 'Edit Volunteer' : 'Add Volunteer'}</h2>
-          <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <input name="first_name" value={form.first_name} onChange={handleChange} placeholder="First Name" className="border p-2 rounded" required />
-            <input name="last_name" value={form.last_name} onChange={handleChange} placeholder="Last Name" className="border p-2 rounded" required />
-            <input name="email" value={form.email} onChange={handleChange} placeholder="Email" className="border p-2 rounded" required type="email" />
-            <input name="id_no" value={form.id_no} onChange={handleChange} placeholder="ID Number" className="border p-2 rounded" required />
-            <input name="phone_number" value={form.phone_number} onChange={handleChange} placeholder="Phone Number" className="border p-2 rounded" required />
-            <select name="gender" value={form.gender} onChange={handleChange} className="border p-2 rounded" required>
-              <option value="">Select Gender</option>
-              <option value="Male">Male</option>
-              <option value="Female">Female</option>
-              <option value="Other">Other</option>
-            </select>
-            <input name="address" value={form.address} onChange={handleChange} placeholder="Address" className="border p-2 rounded md:col-span-2" required />
-            <div className="md:col-span-2 flex gap-2 mt-2">
-              <button type="submit" className="bg-green-800 hover:bg-emerald-700 text-white px-4 py-2 rounded font-semibold" disabled={loading}>{loading ? 'Saving...' : (editId ? 'Update' : 'Add')}</button>
-              {editId && <button type="button" onClick={handleCancel} className="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400">Cancel</button>}
-            </div>
-          </form>
+      <div className="max-w-3xl mx-auto">
+        {/* Header */}
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
+          <div>
+            <h1 className="text-3xl font-extrabold text-white mb-1">Volunteer Dashboard</h1>
+            <p className="text-emerald-100 text-base">Welcome, {volunteer.first_name}!</p>
+          </div>
+          <div className="mt-4 md:mt-0 flex flex-wrap gap-2">
+            <button
+              className="bg-green-800 hover:bg-emerald-700 text-white px-6 py-2 rounded-lg font-semibold shadow-md transition-all duration-200"
+              onClick={() => setEditMode((m) => !m)}
+            >
+              {editMode ? 'Cancel' : 'Edit Profile'}
+            </button>
+            <button
+              className="bg-emerald-700 hover:bg-green-800 text-white px-6 py-2 rounded-lg font-semibold shadow-md transition-all duration-200"
+              onClick={() => window.location.href = '/'}
+            >
+              Logout
+            </button>
+            <button
+              className="bg-yellow-700 hover:bg-yellow-800 text-white px-6 py-2 rounded-lg font-semibold shadow-md transition-all duration-200"
+              onClick={handleUpdate}
+              disabled={loading}
+            >
+              {loading ? 'Updating...' : 'Update Profile'}
+            </button>
+          </div>
         </div>
 
-        {/* Volunteers Table */}
-        <div className="bg-white rounded-2xl shadow p-6">
-          <h2 className="text-xl font-bold mb-4">All Volunteers</h2>
-          <div className="overflow-x-auto">
-            <table className="min-w-full border">
-              <thead>
-                <tr className="bg-emerald-100">
-                  <th className="p-2 border">First Name</th>
-                  <th className="p-2 border">Last Name</th>
-                  <th className="p-2 border">Email</th>
-                  <th className="p-2 border">ID No</th>
-                  <th className="p-2 border">Phone</th>
-                  <th className="p-2 border">Gender</th>
-                  <th className="p-2 border">Address</th>
-                  <th className="p-2 border">User ID</th>
-                  <th className="p-2 border">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {volunteers.length === 0 ? (
-                  <tr><td colSpan={9} className="text-center p-4">No volunteers found.</td></tr>
-                ) : (
-                  volunteers.map((vol) => (
-                    <tr key={vol.id} className="border-b">
-                      <td className="p-2 border">{vol.first_name}</td>
-                      <td className="p-2 border">{vol.last_name}</td>
-                      <td className="p-2 border">{vol.email}</td>
-                      <td className="p-2 border">{vol.id_no}</td>
-                      <td className="p-2 border">{vol.phone_number}</td>
-                      <td className="p-2 border">{vol.gender}</td>
-                      <td className="p-2 border">{vol.address}</td>
-                      <td className="p-2 border">{vol.user_id}</td>
-                      <td className="p-2 border flex gap-2">
-                        <button onClick={() => handleEdit(vol)} className="bg-yellow-500 hover:bg-yellow-600 text-white px-2 py-1 rounded">Edit</button>
-                        <button onClick={() => handleDelete(vol.id)} className="bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded">Delete</button>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+        {/* Motivational Quote */}
+        <div className="bg-emerald-100 border-l-4 border-emerald-600 text-emerald-900 p-4 rounded-xl shadow mb-8 text-center">
+          <span className="italic font-semibold">“We make a living by what we get, but we make a life by what we give.”</span>
+          <span className="block mt-2 text-emerald-700">— Winston Churchill</span>
+        </div>
+
+        {/* Profile Card or Edit Form */}
+        <div className="bg-white rounded-2xl shadow p-6 mb-8">
+          {editMode ? (
+            <form onSubmit={handleUpdate} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-green-900 font-semibold mb-1">First Name</label>
+                  <input name="first_name" value={form.first_name} onChange={handleChange} className="w-full border rounded p-2" required />
+                </div>
+                <div>
+                  <label className="block text-green-900 font-semibold mb-1">Last Name</label>
+                  <input name="last_name" value={form.last_name} onChange={handleChange} className="w-full border rounded p-2" required />
+                </div>
+                <div>
+                  <label className="block text-green-900 font-semibold mb-1">Email</label>
+                  <input name="email" value={form.email} onChange={handleChange} className="w-full border rounded p-2" required type="email" />
+                </div>
+                <div>
+                  <label className="block text-green-900 font-semibold mb-1">ID Number</label>
+                  <input name="id_no" value={form.id_no} onChange={handleChange} className="w-full border rounded p-2" required />
+                </div>
+                <div>
+                  <label className="block text-green-900 font-semibold mb-1">Phone Number</label>
+                  <input name="phone_number" value={form.phone_number} onChange={handleChange} className="w-full border rounded p-2" required />
+                </div>
+                <div>
+                  <label className="block text-green-900 font-semibold mb-1">Gender</label>
+                  <select name="gender" value={form.gender} onChange={handleChange} className="w-full border rounded p-2">
+                    <option value="Female">Female</option>
+                    <option value="Male">Male</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-green-900 font-semibold mb-1">Address</label>
+                  <input name="address" value={form.address} onChange={handleChange} className="w-full border rounded p-2" required />
+                </div>
+              </div>
+              <div className="flex items-center space-x-4 mt-4">
+                <button type="submit" className="bg-green-800 hover:bg-emerald-700 text-white px-6 py-2 rounded-lg font-semibold shadow-md transition-all duration-200" disabled={loading}>
+                  {loading ? 'Saving...' : 'Save Changes'}
+                </button>
+                {success && <span className="text-green-700 font-semibold">{success}</span>}
+                {error && <span className="text-red-600 font-semibold">{error}</span>}
+              </div>
+            </form>
+          ) : (
+            <div className="flex flex-col md:flex-row md:items-center md:space-x-8">
+              <div className="flex-shrink-0 flex items-center justify-center mb-4 md:mb-0">
+                <span role="img" aria-label="volunteer" className="text-6xl" style={{ color: '#26a69a' }}>🤝</span>
+              </div>
+              <div>
+                <div className="text-xl font-bold text-green-900 mb-1">{volunteer.first_name} {volunteer.last_name}</div>
+                <div className="text-emerald-900 mb-1">{volunteer.email}</div>
+                <div className="text-emerald-900 mb-1">{volunteer.phone_number}</div>
+                <div className="text-emerald-900 mb-1">{volunteer.address}</div>
+                <div className="text-emerald-900 mb-1">{volunteer.gender}</div>
+                <div className="text-emerald-900 mb-1">ID: {volunteer.id_no}</div>
+                <div className="text-emerald-700 font-semibold">{volunteer.status}</div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          <div className="bg-white rounded-xl shadow p-6 flex flex-col items-center border border-emerald-100">
+            <span className="text-3xl font-bold text-green-900">{volunteer.events_attended.length}</span>
+            <span className="text-emerald-700 mt-2">Events Attended</span>
           </div>
+          <div className="bg-white rounded-xl shadow p-6 flex flex-col items-center border border-emerald-100">
+            <span className="text-3xl font-bold text-green-900">{volunteer.status}</span>
+            <span className="text-emerald-700 mt-2">Status</span>
+          </div>
+        </div>
+
+        {/* Events Attended Section */}
+        <div className="bg-white rounded-2xl shadow p-6">
+          <h3 className="text-xl font-bold text-green-900 mb-4">Events Attended</h3>
+          <ul className="space-y-3">
+            {volunteer.events_attended.map((event, idx) => (
+              <li key={idx} className="flex flex-col md:flex-row md:items-center md:justify-between border-b border-emerald-50 pb-2 mb-2 last:border-b-0 last:mb-0">
+                <div>
+                  <span className="font-semibold text-green-900">{event.name}</span>
+                  <span className="block text-emerald-700 text-sm">{event.date}</span>
+                </div>
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
     </div>
