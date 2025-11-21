@@ -115,7 +115,7 @@ function LoginForm({ handleSwitch }) {
                         <strong>Not Registered?  </strong>
                         <button
                             type="button"
-                            onClick={() => handleSwitch('signup')}
+                            onClick={() => handleSwitch('register')}
                             className="font-s underline text-primary hover:text-blue-700"
                         >
                             Sign up

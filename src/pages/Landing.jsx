@@ -101,7 +101,7 @@ export default function Landing({isOpen, popupType, togglePopup}) {
                   >
                     Let&apos;s Connect
                   </button>
-                  <AuthModal isOpen={isOpen} togglePopup={togglePopup} popupType={popupType}/>
+                  <AuthModal isOpen={isOpen} togglePopup={togglePopup} popupType={popupType}zzzz/>
                 </div>
               </div>
             </div>
