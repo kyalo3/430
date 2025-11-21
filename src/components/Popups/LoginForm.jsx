@@ -22,18 +22,18 @@ function LoginForm({ handleSwitch }) {
             
             setSuccessMessage('Login successful! Redirecting...');
             resetForm();
-            
-            // Wait a moment then redirect based on user role
+
+            // Wait a moment then redirect based on user role using navigate()
             setTimeout(() => {
                 const role = localStorage.getItem('userRole');
                 if (role === 'donor') {
-                    window.location.href = '/dashboard/donor';
+                    navigate('/dashboard/donor');
                 } else if (role === 'recipient') {
-                    window.location.href = '/dashboard/recipient';
+                    navigate('/dashboard/recipient');
                 } else if (role === 'volunteer') {
-                    window.location.href = '/dashboard/volunteer';
+                    navigate('/dashboard/volunteer');
                 } else if (role === 'admin') {
-                    window.location.href = '/dashboard/admin';
+                    navigate('/dashboard/admin');
                 } else {
                     setSuccessMessage('Login successful! Please complete your profile.');
                 }

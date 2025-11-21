@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
@@ -52,8 +50,8 @@ function VolunteerDashboard() {
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Handle update profile
-  const handleUpdate = async (e) => {
+  // Handle submit profile
+  const handleSubmit = async (e) => {
     if (e) e.preventDefault();
     setLoading(true);
     setSuccess('');
@@ -70,11 +68,11 @@ function VolunteerDashboard() {
         gender: form.gender,
         address: form.address
       };
-      // await axios.put(
-      //   `http://127.0.0.1:8000/volunteers/${volunteerId}`,
-      //   payload,
-      //   { headers: { Authorization: `Bearer ${token}` } }
-      // );
+      await axios.put(
+         `http://127.0.0.1:8000/volunteers/${volunteerId}`,
+         payload,
+         { headers: { Authorization: `Bearer ${token}` } }
+       );
       setVolunteer((prev) => ({ ...prev, ...payload }));
       setEditMode(false);
       setSuccess('Profile updated successfully!');
@@ -109,7 +107,7 @@ function VolunteerDashboard() {
             </button>
             <button
               className="bg-yellow-700 hover:bg-yellow-800 text-white px-6 py-2 rounded-lg font-semibold shadow-md transition-all duration-200"
-              onClick={handleUpdate}
+              onClick={handleSubmit}
               disabled={loading}
             >
               {loading ? 'Updating...' : 'Update Profile'}
@@ -126,7 +124,7 @@ function VolunteerDashboard() {
         {/* Profile Card or Edit Form */}
         <div className="bg-white rounded-2xl shadow p-6 mb-8">
           {editMode ? (
-            <form onSubmit={handleUpdate} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-green-900 font-semibold mb-1">First Name</label>
