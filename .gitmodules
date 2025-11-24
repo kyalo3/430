@@ -1,0 +1,3 @@
+[submodule "sustainashare_backend"]
+	path = sustainashare_backend
+	url = https://github.com/kyalo3/430_backend.git
