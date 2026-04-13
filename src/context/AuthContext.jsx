@@ -1,8 +1,5 @@
 import { createContext, useState, useEffect } from 'react';
-import axios from 'axios';
-
-//const API_URL = 'http://0.0.0.0:8000';
-const API_URL = 'http://127.0.0.1:8000';
+import api from '../lib/api';
 
 export const AuthContext = createContext(null);
 
@@ -15,10 +12,9 @@ export const AuthProvider = ({ children }) => {
   const [error, setError] = useState(null);
 
   // Fetch full user data from backend
-  const fetchCurrentUser = async (token) => {
+  const fetchCurrentUser = async () => {
     try {
-      const config = { headers: { Authorization: `Bearer ${token}` } };
-      const res = await axios.get(`${API_URL}/users/me`, config);
+      const res = await api.get('/users/me');
 
       if (res.data) {
         setCurrentUser(res.data);
@@ -49,7 +45,7 @@ export const AuthProvider = ({ children }) => {
         admin_code: adminCode || '',
       };
 
-      await axios.post(`${API_URL}/register`, payload);
+      await api.post('/register', payload);
 
       // Auto-login after registration
       await signIn(username, password);
@@ -69,7 +65,7 @@ export const AuthProvider = ({ children }) => {
       formData.append('username', identifier);
       formData.append('password', password);
 
-      const response = await axios.post(`${API_URL}/token`, formData, {
+      const response = await api.post('/token', formData, {
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       });
 
@@ -78,7 +74,7 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('token', token);
 
       // Fetch the full user data
-      await fetchCurrentUser(token);
+      await fetchCurrentUser();
 
       setLoading(false);
     } catch (err) {
@@ -105,7 +101,7 @@ export const AuthProvider = ({ children }) => {
     const storedToken = localStorage.getItem('token');
     if (storedToken) {
       setUserToken(storedToken);
-      fetchCurrentUser(storedToken).finally(() => setLoading(false));
+      fetchCurrentUser().finally(() => setLoading(false));
     } else {
       setLoading(false);
     }

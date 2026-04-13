@@ -1,4 +1,5 @@
 import React from 'react';
+import api from '../lib/api';
 
 function StatCard({ title, value, icon, color }) {
   // Color map for icon backgrounds
@@ -188,6 +189,9 @@ function AdminDashboard() {
     window.location.href = '/dashboard/reports';
   };
   const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    localStorage.removeItem('userRole');
     window.location.href = '/';
   };
 
@@ -211,7 +215,6 @@ function AdminDashboard() {
     setAddUserError('');
     setAddUserSuccess('');
     try {
-      const token = localStorage.getItem('token');
       const profile = {
         first_name: userForm.first_name,
         last_name: userForm.last_name,
@@ -227,18 +230,7 @@ function AdminDashboard() {
         role: userType,
         profile,
       };
-      const res = await fetch('http://127.0.0.1:8000/users/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(payload),
-      });
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.detail || 'Failed to add user');
-      }
+      const res = await api.post('/users/', payload);
       setAddUserSuccess('User added successfully!');
       setTimeout(() => handleUserModalClose(), 1200);
     } catch (err) {

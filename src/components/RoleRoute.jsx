@@ -6,7 +6,6 @@ const RoleRoute = () => {
   const { userRole } = useContext(AuthContext);
 
   if (!userRole) return <Navigate to="/" replace />;
-  }
 
   switch (userRole) {
     case "donor":

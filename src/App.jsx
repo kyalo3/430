@@ -10,6 +10,8 @@ import RecipientDashboard from './pages/RecipientDashboard';
 import VolunteerDashboard from './pages/VolunteerDashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import Reports from './pages/Reports';
+import PrivateRoute from './components/PrivateRoute';
+import RoleRoute from './components/RoleRoute';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 
 function App() {
@@ -39,12 +41,13 @@ function App() {
         <Route path="/shop" element={<ShoppingPage/>} />
         <Route path="/shop/collection/:category"  element={<CollectionsPage/>} />
         <Route path="/shop/collection/:category/:product/:productid"  element={<ProductPage/>} />
-        <Route path="/dashboard/donor" element={<DonorDashboard/>} />
-        <Route path="/dashboard/recipient" element={<RecipientDashboard/>} />
-        <Route path="/dashboard/volunteer" element={<VolunteerDashboard/>} />
-        <Route path="/volunteer" element={<VolunteerDashboard/>} />
-        <Route path="/dashboard/admin" element={<AdminDashboard/>} />
-        <Route path="/dashboard/reports" element={<Reports/>} />
+        <Route path="/dashboard" element={<PrivateRoute><RoleRoute /></PrivateRoute>} />
+        <Route path="/dashboard/donor" element={<PrivateRoute><DonorDashboard/></PrivateRoute>} />
+        <Route path="/dashboard/recipient" element={<PrivateRoute><RecipientDashboard/></PrivateRoute>} />
+        <Route path="/dashboard/volunteer" element={<PrivateRoute><VolunteerDashboard/></PrivateRoute>} />
+        <Route path="/volunteer" element={<PrivateRoute><VolunteerDashboard/></PrivateRoute>} />
+        <Route path="/dashboard/admin" element={<PrivateRoute><AdminDashboard/></PrivateRoute>} />
+        <Route path="/dashboard/reports" element={<PrivateRoute><Reports/></PrivateRoute>} />
       </Routes>
     </Router>
   );

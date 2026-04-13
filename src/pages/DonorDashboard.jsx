@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import axios from 'axios';
+import api from '../lib/api';
 import { AuthContext } from '../context/AuthContext';
 
 // Replace with real data fetching in production
@@ -48,12 +48,8 @@ function DonorDashboard() {
   // Fetch donations for this donor from backend
   const fetchDonations = async () => {
     try {
-      const token = localStorage.getItem('token');
       if (!currentUser?.id || currentUser.id === 'replace_with_real_id') return;
-      const res = await axios.get(
-        `http://127.0.0.1:8000/donors/${currentUser.id}/donations/`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      const res = await api.get(`/donors/${currentUser.id}/donations/`);
       setDonations(res.data || []);
     } catch (err) {
       setDonations([]);
@@ -93,7 +89,6 @@ function DonorDashboard() {
     }
 
     try {
-      const token = localStorage.getItem('token');
       if (!currentUser?.id || currentUser.id === 'replace_with_real_id') throw new Error('Invalid donor ID');
       const payload = {
         ...donationForm,
@@ -101,11 +96,7 @@ function DonorDashboard() {
         price: Number(donationForm.price),
         donor_id: currentUser.id,
       };
-      await axios.post(
-        'http://127.0.0.1:8000/donations/',
-        payload,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      await api.post('/donations/', payload);
       setDonationSuccess('Donation added successfully!');
       setDonationForm({ food_item: '', brand: '', description: '', quantity: '', price: '', recipient_id: '' });
       fetchDonations();
@@ -139,7 +130,6 @@ function DonorDashboard() {
     setSuccess('');
     setError('');
     try {
-      const token = localStorage.getItem('token');
       const donorId = currentUser?.id;
       const payload = {
         first_name: form.first_name,
@@ -154,11 +144,7 @@ function DonorDashboard() {
         participating_locations: form.participating_locations,
         type_of_company: form.type_of_company,
       };
-      await axios.put(
-        `http://127.0.0.1:8000/donors/${donorId}`,
-        payload,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      await api.put(`/donors/${donorId}`, payload);
       setDonor((prev) => ({ ...prev, ...payload }));
       setEditMode(false);
       setSuccess('Profile updated successfully!');
