@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import team from '../assets/images/team.svg';
+import family from '../assets/images/family.svg';
 
 // Example initial data structure for a recipient
 const initialRecipient = {
@@ -98,6 +100,30 @@ function RecipientDashboard() {
             >
               Logout
             </button>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3 mb-8">
+          <div className="rounded-2xl overflow-hidden bg-white shadow border border-emerald-100">
+            <div className="h-28 bg-cover bg-center" style={{ backgroundImage: "url('/images/hero.webp')" }} />
+            <div className="p-3">
+              <p className="text-xs uppercase font-bold tracking-wide text-emerald-700">Home Context</p>
+              <p className="text-xs text-emerald-900 mt-1">Shared mission imagery keeps the recipient journey familiar.</p>
+            </div>
+          </div>
+          <div className="rounded-2xl overflow-hidden bg-white shadow border border-emerald-100">
+            <img src={team} alt="Support team" className="h-28 w-full object-contain bg-emerald-50" />
+            <div className="p-3">
+              <p className="text-xs uppercase font-bold tracking-wide text-emerald-700">Support Teams</p>
+              <p className="text-xs text-emerald-900 mt-1">Shows who coordinates your incoming support.</p>
+            </div>
+          </div>
+          <div className="rounded-2xl overflow-hidden bg-white shadow border border-emerald-100">
+            <img src={family} alt="Beneficiary family" className="h-28 w-full object-contain bg-emerald-50" />
+            <div className="p-3">
+              <p className="text-xs uppercase font-bold tracking-wide text-emerald-700">Community Impact</p>
+              <p className="text-xs text-emerald-900 mt-1">Visual reminder of household-level outcomes.</p>
+            </div>
           </div>
         </div>
 
