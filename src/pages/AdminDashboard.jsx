@@ -1,5 +1,7 @@
 import React from 'react';
 import api from '../lib/api';
+import team from '../assets/images/team.svg';
+import family from '../assets/images/family.svg';
 
 function StatCard({ title, value, icon, color }) {
   // Color map for icon backgrounds
@@ -299,237 +301,259 @@ function AdminDashboard() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-emerald-900 to-green-900 py-10 px-2">
-      <div className="max-w-6xl mx-auto">
-        {/* Title at the very top */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-10 gap-4 relative">
-          <div>
-            <h1 className="text-4xl font-extrabold text-white mb-1">Admin Dashboard</h1>
-            <p className="text-emerald-100 text-base">Welcome, Admin! Here’s a quick overview of your system.</p>
-          </div>
-          <button
-            className="absolute right-0 top-0 bg-red-600 hover:bg-red-700 text-white px-5 py-2 rounded-lg font-semibold shadow transition-all md:static md:ml-auto md:mt-0"
-            onClick={handleLogout}
-            style={{ minWidth: 110 }}
-          >
-            Logout
-          </button>
-        </div>
-        {/* System Health & Quick Actions */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8 gap-4">
-          <div className="bg-white rounded-xl shadow p-4 flex flex-col items-center min-w-[220px]">
-            <div className="text-2xl font-bold text-green-700 mb-1">System Health</div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="inline-block w-3 h-3 rounded-full bg-green-500"></span>
-              <span className="text-green-700 font-semibold">All Services Operational</span>
+    <div className="min-h-screen bg-[radial-gradient(circle_at_15%_10%,#fef3c7_0,#d1fae5_35%,#c7d2fe_70%,#0f172a_100%)] px-3 py-6 md:px-6 md:py-8">
+      <div className="mx-auto max-w-7xl space-y-6">
+        <section className="admin-fade-up relative overflow-hidden rounded-3xl border border-slate-200 bg-slate-950/90 p-6 shadow-2xl backdrop-blur md:p-8">
+          <div className="pointer-events-none absolute -right-20 -top-16 h-56 w-56 rounded-full bg-amber-300/20 blur-3xl" />
+          <div className="pointer-events-none absolute -bottom-20 left-10 h-56 w-56 rounded-full bg-emerald-300/20 blur-3xl" />
+
+          <div className="relative flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.28em] text-amber-300">Admin Command Center</p>
+              <h1 className="mt-2 text-3xl font-black text-white md:text-5xl">Platform oversight, at a glance.</h1>
+              <p className="mt-2 max-w-2xl text-sm text-slate-300">Monitor system health, manage people, review requests, and keep operations moving from a single coordinated workspace.</p>
+              <p className="mt-2 text-xs font-semibold text-slate-400">Last checked: {new Date().toLocaleString()}</p>
             </div>
-            <div className="text-xs text-gray-400">Last checked: {new Date().toLocaleTimeString()}</div>
-          </div>
-          <div className="flex flex-wrap gap-2 mt-4 md:mt-0">
-            <button
-              className="bg-emerald-700 hover:bg-emerald-800 text-white px-5 py-2 rounded-lg font-semibold shadow transition-all"
-              onClick={handleAddUser}
-            >
-              Add User
-            </button>
-            <button
-              className="bg-yellow-600 hover:bg-yellow-700 text-white px-5 py-2 rounded-lg font-semibold shadow transition-all"
-              onClick={handleAddDonation}
-            >
-              Add Donation
-            </button>
-            <button
-              className="bg-blue-700 hover:bg-blue-800 text-white px-5 py-2 rounded-lg font-semibold shadow transition-all"
-              onClick={handleViewReports}
-            >
-              View Reports
-            </button>
+            <div className="flex flex-wrap gap-2">
+              <button className="rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-950 shadow transition hover:bg-emerald-400" onClick={handleAddUser}>
+                Add User
+              </button>
+              <button className="rounded-xl bg-amber-400 px-4 py-2 text-sm font-semibold text-slate-950 shadow transition hover:bg-amber-300" onClick={handleAddDonation}>
+                Add Donation
+              </button>
+              <button className="rounded-xl border border-cyan-300/30 bg-cyan-400/10 px-4 py-2 text-sm font-semibold text-cyan-100 transition hover:bg-cyan-400/20" onClick={handleViewReports}>
+                View Reports
+              </button>
+              <button className="rounded-xl border border-rose-300/30 bg-rose-400/10 px-4 py-2 text-sm font-semibold text-rose-100 transition hover:bg-rose-400/20" onClick={handleLogout}>
+                Logout
+              </button>
+            </div>
           </div>
 
-          {/* Add User Modal */}
-          {showAddUser && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-              <div className="bg-white rounded-xl shadow-xl p-8 w-full max-w-lg relative">
-                <button onClick={handleUserModalClose} className="absolute top-3 right-3 text-gray-500 hover:text-red-600 text-2xl">&times;</button>
-                <h2 className="text-2xl font-bold mb-4 text-emerald-800">Add User</h2>
-                {addUserError && <div className="bg-red-100 text-red-700 p-2 rounded mb-2">{addUserError}</div>}
-                {addUserSuccess && <div className="bg-green-100 text-green-700 p-2 rounded mb-2">{addUserSuccess}</div>}
-                <form onSubmit={handleUserFormSubmit} className="space-y-3">
-                  <div className="flex gap-2">
-                    <input name="username" value={userForm.username} onChange={handleUserFormChange} placeholder="Username" className="border p-2 rounded w-1/2" required />
-                    <input name="email" value={userForm.email} onChange={handleUserFormChange} placeholder="Email" className="border p-2 rounded w-1/2" required type="email" />
-                  </div>
-                  <input name="password" value={userForm.password} onChange={handleUserFormChange} placeholder="Password" className="border p-2 rounded w-full" required type="password" />
-                  <div>
-                    <label className="block font-semibold mb-1">User Type</label>
-                    <select value={userType} onChange={handleUserTypeChange} className="border p-2 rounded w-full">
-                      <option value="donor">Donor</option>
-                      <option value="recipient">Recipient</option>
-                      <option value="volunteer">Volunteer</option>
-                    </select>
-                  </div>
-                  <div className="flex gap-2">
-                    <input name="first_name" value={userForm.first_name} onChange={handleUserFormChange} placeholder="First Name" className="border p-2 rounded w-1/2" required />
-                    <input name="last_name" value={userForm.last_name} onChange={handleUserFormChange} placeholder="Last Name" className="border p-2 rounded w-1/2" required />
-                  </div>
-                  <input name="id_no" value={userForm.id_no} onChange={handleUserFormChange} placeholder="ID Number" className="border p-2 rounded w-full" required />
-                  <input name="phone_number" value={userForm.phone_number} onChange={handleUserFormChange} placeholder="Phone Number" className="border p-2 rounded w-full" required />
-                  <select name="gender" value={userForm.gender} onChange={handleUserFormChange} className="border p-2 rounded w-full" required>
-                    <option value="">Select Gender</option>
-                    <option value="male">Male</option>
-                    <option value="female">Female</option>
-                    <option value="other">Other</option>
-                  </select>
-                  <input name="address" value={userForm.address} onChange={handleUserFormChange} placeholder="Address" className="border p-2 rounded w-full" required />
-                  <div className="flex justify-end gap-2 mt-2">
-                    <button type="submit" className="bg-emerald-700 hover:bg-emerald-800 text-white px-4 py-2 rounded font-semibold">Add User</button>
-                    <button type="button" onClick={handleUserModalClose} className="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400">Cancel</button>
-                  </div>
-                </form>
+          <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-3">
+            <article className="rounded-2xl border border-white/10 bg-white/5 p-4 text-white shadow-lg backdrop-blur">
+              <p className="text-xs font-bold uppercase tracking-widest text-amber-300">System Health</p>
+              <div className="mt-2 flex items-center gap-2 text-sm font-semibold text-emerald-200">
+                <span className="inline-block h-3 w-3 rounded-full bg-emerald-400" />
+                All services operational
               </div>
+              <p className="mt-2 text-xs text-slate-300">Core services are responding normally and admin actions are available.</p>
+            </article>
+            <article className="rounded-2xl border border-white/10 bg-white/5 p-4 text-white shadow-lg backdrop-blur">
+              <p className="text-xs font-bold uppercase tracking-widest text-emerald-300">Pending Queue</p>
+              <p className="mt-2 text-3xl font-black text-white">{pendingApprovals.length + miniStats[0].value + miniStats[1].value}</p>
+              <p className="mt-1 text-xs text-slate-300">Approvals, reviews, and donation actions waiting attention.</p>
+            </article>
+            <article className="rounded-2xl border border-white/10 bg-white/5 p-4 text-white shadow-lg backdrop-blur">
+              <p className="text-xs font-bold uppercase tracking-widest text-cyan-300">System Focus</p>
+              <p className="mt-2 text-sm font-semibold text-white">Coordinate people, donations, and visibility from one control room.</p>
+              <p className="mt-1 text-xs text-slate-300">Designed for fast scanning and rapid action.</p>
+            </article>
+          </div>
+        </section>
+
+        <section className="admin-fade-up grid grid-cols-1 gap-4 md:grid-cols-3" style={{ animationDelay: '120ms' }}>
+          <article className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-lg">
+            <div className="h-36 bg-cover bg-center" style={{ backgroundImage: "url('/images/hero.webp')" }} />
+            <div className="p-4">
+              <h3 className="text-sm font-black uppercase tracking-wide text-slate-800">Platform Snapshot</h3>
+              <p className="mt-1 text-xs text-slate-600">A calm visual anchor for the admin workspace.</p>
             </div>
-          )}
-        </div>
-        {/* Stat Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-10">
-          {stats.map((s) => (
-            <StatCard key={s.title} {...s} />
+          </article>
+          <article className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-lg">
+            <img src={team} alt="Operations team" className="h-36 w-full bg-emerald-50 object-contain" />
+            <div className="p-4">
+              <h3 className="text-sm font-black uppercase tracking-wide text-slate-800">Operations Team</h3>
+              <p className="mt-1 text-xs text-slate-600">Represents the coordination layer keeping the platform moving.</p>
+            </div>
+          </article>
+          <article className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-lg">
+            <img src={family} alt="Beneficiary outcomes" className="h-36 w-full bg-emerald-50 object-contain" />
+            <div className="p-4">
+              <h3 className="text-sm font-black uppercase tracking-wide text-slate-800">Outcome Lens</h3>
+              <p className="mt-1 text-xs text-slate-600">Keeps the end-user outcome visible while managing operations.</p>
+            </div>
+          </article>
+        </section>
+
+        <section className="grid grid-cols-2 gap-4 md:grid-cols-4">
+          {stats.map((s, index) => (
+            <div key={s.title} className="admin-fade-up" style={{ animationDelay: `${120 + index * 60}ms` }}>
+              <StatCard {...s} />
+            </div>
           ))}
-        </div>
-        <div className="border-t border-emerald-100 mb-10"></div>
+        </section>
 
-        {/* Donation Requests Management */}
-        <div className="bg-white rounded-xl shadow p-6 mb-10">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4 gap-2">
-            <h2 className="text-lg font-bold text-emerald-700">Donation Requests</h2>
-            <input
-              type="text"
-              placeholder="Search requests..."
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              className="border p-2 rounded w-full md:w-64"
-            />
-          </div>
-          <div className="overflow-x-auto">
-            <table className="min-w-full text-sm">
-              <thead>
-                <tr className="bg-emerald-50">
-                  <th className="px-2 py-1 text-left">Recipient</th>
-                  <th className="px-2 py-1 text-left">Item</th>
-                  <th className="px-2 py-1 text-left">Custom Request</th>
-                  <th className="px-2 py-1 text-left">Status</th>
-                  <th className="px-2 py-1 text-left">Date</th>
-                  <th className="px-2 py-1 text-left">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredRequests.length === 0 ? (
-                  <tr><td colSpan={6} className="text-center p-4">No requests found.</td></tr>
-                ) : (
-                  filteredRequests.map((req) => (
-                    <tr key={req.id} className="border-b last:border-b-0">
-                      <td className="px-2 py-1 font-semibold text-green-800">{req.recipient}</td>
-                      <td className="px-2 py-1">{req.item}</td>
-                      <td className="px-2 py-1">{req.custom}</td>
-                      <td className="px-2 py-1">
-                        <span className={`px-2 py-1 rounded text-xs font-bold ${req.status === 'Pending' ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700'}`}>{req.status}</span>
-                      </td>
-                      <td className="px-2 py-1">{req.date}</td>
-                      <td className="px-2 py-1 flex gap-2">
-                        {req.status === 'Pending' && <button className="bg-emerald-600 hover:bg-emerald-700 text-white px-2 py-1 rounded text-xs">Mark Fulfilled</button>}
-                        <button className="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs">View</button>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
-          {/* Activity Timeline */}
-          <div className="flex flex-col h-full">
-            <div className="bg-white rounded-xl shadow p-6 flex-1 flex flex-col">
-              <h2 className="text-lg font-bold text-emerald-900 mb-4">Recent Activity</h2>
-              <div className="flex-1 flex flex-col gap-2">
-                {activities.map((a, i) => (
-                  <ActivityItem key={i} {...a} />
-                ))}
+        <section className="grid grid-cols-1 gap-6 xl:grid-cols-3">
+          <article className="admin-fade-up rounded-3xl border border-slate-200 bg-white p-6 shadow-xl xl:col-span-2" style={{ animationDelay: '420ms' }}>
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-slate-900">Donation Requests</h2>
+                <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Search, review, and act quickly</p>
               </div>
+              <input type="text" placeholder="Search requests..." value={search} onChange={(e) => setSearch(e.target.value)} className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm focus:border-slate-500 focus:outline-none md:w-72" />
             </div>
-          </div>
-          {/* Top Donors Table */}
-          <div className="flex flex-col h-full">
-            <TopDonorsTable donors={topDonors} />
-          </div>
-          {/* Recent Users List */}
-          <div className="flex flex-col h-full">
-            <RecentUsersList users={recentUsers} />
-          </div>
-        </div>
-        {/* Donations Trend Chart and Recent Feedback */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <DonationsTrendChart data={donationsTrend} />
-          <div className="flex flex-col gap-6">
-            <div className="bg-emerald-100 border-l-4 border-emerald-600 text-emerald-900 p-6 rounded-xl shadow flex flex-col justify-center items-center">
-              <span className="italic font-semibold text-lg mb-2">“Great leaders don’t set out to be a leader… they set out to make a difference. It’s never about the role – always about the goal.”</span>
-              <span className="block text-emerald-700">— Lisa Haisha</span>
+            <div className="overflow-x-auto">
+              <table className="min-w-full text-sm">
+                <thead>
+                  <tr className="border-b border-slate-200 text-left text-xs uppercase tracking-wider text-slate-500">
+                    <th className="px-3 py-2">Recipient</th>
+                    <th className="px-3 py-2">Item</th>
+                    <th className="px-3 py-2">Custom Request</th>
+                    <th className="px-3 py-2">Status</th>
+                    <th className="px-3 py-2">Date</th>
+                    <th className="px-3 py-2">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredRequests.length === 0 ? (
+                    <tr><td colSpan={6} className="px-3 py-8 text-center text-slate-500">No requests found.</td></tr>
+                  ) : (
+                    filteredRequests.map((req) => (
+                      <tr key={req.id} className="border-b border-slate-100 hover:bg-slate-50">
+                        <td className="px-3 py-3 font-semibold text-slate-900">{req.recipient}</td>
+                        <td className="px-3 py-3 text-slate-700">{req.item}</td>
+                        <td className="px-3 py-3 text-slate-700">{req.custom}</td>
+                        <td className="px-3 py-3">
+                          <span className={`rounded-full px-2.5 py-1 text-xs font-bold ${req.status === 'Pending' ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'}`}>{req.status}</span>
+                        </td>
+                        <td className="px-3 py-3 text-slate-700">{req.date}</td>
+                        <td className="px-3 py-3">
+                          <div className="flex flex-wrap gap-2">
+                            {req.status === 'Pending' && <button className="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700">Mark Fulfilled</button>}
+                            <button className="rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white hover:bg-slate-800">View</button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
             </div>
-            {/* Recent Feedback Section */}
-            <div className="bg-white rounded-xl shadow p-6">
-              <h2 className="text-lg font-bold text-emerald-700 mb-4">Recent Feedback</h2>
-              <ul className="divide-y">
-                <li className="py-3 flex flex-col md:flex-row md:items-center md:justify-between">
-                  <div>
-                    <span className="font-bold text-gray-700">“Great donation process, very smooth!”</span>
-                    <span className="text-xs text-gray-400 ml-2">- Alice, 2025-11-20</span>
-                  </div>
-                </li>
-                <li className="py-3 flex flex-col md:flex-row md:items-center md:justify-between">
-                  <div>
-                    <span className="font-bold text-gray-700">“Appreciate the quick response from support.”</span>
-                    <span className="text-xs text-gray-400 ml-2">- Bob, 2025-11-19</span>
-                  </div>
-                </li>
-                <li className="py-3 flex flex-col md:flex-row md:items-center md:justify-between">
-                  <div>
-                    <span className="font-bold text-gray-700">“Would love to see more food variety.”</span>
-                    <span className="text-xs text-gray-400 ml-2">- Carol, 2025-11-18</span>
-                  </div>
-                </li>
+          </article>
+
+          <aside className="space-y-6">
+            <article className="admin-fade-up rounded-3xl border border-slate-200 bg-white p-5 shadow-xl" style={{ animationDelay: '480ms' }}>
+              <div className="mb-3 flex items-center justify-between">
+                <h3 className="text-sm font-black uppercase tracking-wider text-slate-800">Recent Activity</h3>
+                <span className="text-xs font-semibold text-slate-500">Live feed</span>
+              </div>
+              <div className="space-y-1">
+                {activities.map((a, i) => <ActivityItem key={i} {...a} />)}
+              </div>
+            </article>
+
+            <article className="admin-fade-up rounded-3xl border border-slate-200 bg-white p-5 shadow-xl" style={{ animationDelay: '540ms' }}>
+              <div className="mb-3 flex items-center justify-between">
+                <h3 className="text-sm font-black uppercase tracking-wider text-slate-800">Announcements</h3>
+                <span className="text-xs font-semibold text-slate-500">System notices</span>
+              </div>
+              <ul className="space-y-3">
+                {announcements.map((a, i) => (
+                  <li key={i} className="rounded-2xl bg-slate-50 p-3">
+                    <div className="font-semibold text-slate-900">{a.title}</div>
+                    <div className="mt-1 text-sm text-slate-600">{a.message}</div>
+                    <div className="mt-2 text-xs text-slate-400">{a.date}</div>
+                  </li>
+                ))}
               </ul>
+            </article>
+          </aside>
+        </section>
+
+        <section className="grid grid-cols-1 gap-6 xl:grid-cols-3">
+          <article className="admin-fade-up rounded-3xl border border-slate-200 bg-white p-5 shadow-xl xl:col-span-2" style={{ animationDelay: '600ms' }}>
+            <div className="mb-3 flex items-center justify-between">
+              <h3 className="text-sm font-black uppercase tracking-wider text-amber-700">Donations Trend</h3>
+              <span className="text-xs font-semibold text-slate-500">7 day view</span>
             </div>
-          </div>
-        </div>
-        <div className="border-t border-emerald-100 mb-10"></div>
-        {/* Announcements Only */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-10">
-          <div className="bg-white rounded-xl shadow p-6">
-            <h2 className="text-lg font-bold text-blue-700 mb-4">System Announcements</h2>
-            <ul className="divide-y">
-              {announcements.map((a, i) => (
-                <li key={i} className="py-3">
-                  <div className="font-semibold text-emerald-800">{a.title}</div>
-                  <div className="text-gray-700 mb-1">{a.message}</div>
-                  <div className="text-xs text-gray-400">{a.date}</div>
+            <DonationsTrendChart data={donationsTrend} />
+          </article>
+
+          <article className="admin-fade-up rounded-3xl border border-slate-200 bg-white p-5 shadow-xl" style={{ animationDelay: '660ms' }}>
+            <h3 className="text-sm font-black uppercase tracking-wider text-slate-800">Recent Donations</h3>
+            <ul className="mt-3 space-y-3">
+              {recentDonations.map((don, idx) => (
+                <li key={idx} className="rounded-2xl border border-slate-100 bg-slate-50 p-3">
+                  <div className="font-semibold text-slate-900">{don.food}</div>
+                  <div className="mt-1 text-xs text-slate-500">Qty: {don.qty} | Donor: {don.donor}</div>
+                  <div className="mt-1 text-xs text-slate-400">{don.date}</div>
                 </li>
               ))}
             </ul>
+          </article>
+        </section>
+
+        <section className="grid grid-cols-1 gap-6 xl:grid-cols-3">
+          <article className="admin-fade-up rounded-3xl border border-slate-200 bg-white p-5 shadow-xl" style={{ animationDelay: '720ms' }}>
+            <TopDonorsTable donors={topDonors} />
+          </article>
+          <article className="admin-fade-up rounded-3xl border border-slate-200 bg-white p-5 shadow-xl" style={{ animationDelay: '780ms' }}>
+            <RecentUsersList users={recentUsers} />
+          </article>
+          <article className="admin-fade-up rounded-3xl border border-slate-200 bg-slate-950 p-5 text-white shadow-xl" style={{ animationDelay: '840ms' }}>
+            <h3 className="text-sm font-black uppercase tracking-wider text-amber-300">Leadership Note</h3>
+            <p className="mt-3 text-sm text-slate-300">Great platforms feel calm even when the system is busy. This panel keeps operations, people, and outcomes visible without mixing the visual language of the role-based dashboards.</p>
+          </article>
+        </section>
+
+        {/* Add User Modal */}
+        {showAddUser && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-sm">
+            <div className="relative w-full max-w-lg rounded-3xl border border-white/10 bg-white p-8 shadow-2xl">
+              <button onClick={handleUserModalClose} className="absolute right-4 top-3 text-3xl text-slate-400 transition hover:text-rose-600">&times;</button>
+              <h2 className="text-2xl font-black text-slate-900">Add User</h2>
+              {addUserError && <div className="mt-3 rounded-xl bg-rose-50 p-3 text-rose-700">{addUserError}</div>}
+              {addUserSuccess && <div className="mt-3 rounded-xl bg-emerald-50 p-3 text-emerald-700">{addUserSuccess}</div>}
+              <form onSubmit={handleUserFormSubmit} className="mt-4 space-y-3">
+                <div className="grid gap-3 md:grid-cols-2">
+                  <input name="username" value={userForm.username} onChange={handleUserFormChange} placeholder="Username" className="rounded-xl border border-slate-300 px-3 py-2.5 focus:border-slate-500 focus:outline-none" required />
+                  <input name="email" value={userForm.email} onChange={handleUserFormChange} placeholder="Email" className="rounded-xl border border-slate-300 px-3 py-2.5 focus:border-slate-500 focus:outline-none" required type="email" />
+                </div>
+                <input name="password" value={userForm.password} onChange={handleUserFormChange} placeholder="Password" className="w-full rounded-xl border border-slate-300 px-3 py-2.5 focus:border-slate-500 focus:outline-none" required type="password" />
+                <div>
+                  <label className="mb-1 block text-sm font-semibold text-slate-700">User Type</label>
+                  <select value={userType} onChange={handleUserTypeChange} className="w-full rounded-xl border border-slate-300 px-3 py-2.5 focus:border-slate-500 focus:outline-none">
+                    <option value="donor">Donor</option>
+                    <option value="recipient">Recipient</option>
+                    <option value="volunteer">Volunteer</option>
+                  </select>
+                </div>
+                <div className="grid gap-3 md:grid-cols-2">
+                  <input name="first_name" value={userForm.first_name} onChange={handleUserFormChange} placeholder="First Name" className="rounded-xl border border-slate-300 px-3 py-2.5 focus:border-slate-500 focus:outline-none" required />
+                  <input name="last_name" value={userForm.last_name} onChange={handleUserFormChange} placeholder="Last Name" className="rounded-xl border border-slate-300 px-3 py-2.5 focus:border-slate-500 focus:outline-none" required />
+                </div>
+                <input name="id_no" value={userForm.id_no} onChange={handleUserFormChange} placeholder="ID Number" className="w-full rounded-xl border border-slate-300 px-3 py-2.5 focus:border-slate-500 focus:outline-none" required />
+                <input name="phone_number" value={userForm.phone_number} onChange={handleUserFormChange} placeholder="Phone Number" className="w-full rounded-xl border border-slate-300 px-3 py-2.5 focus:border-slate-500 focus:outline-none" required />
+                <select name="gender" value={userForm.gender} onChange={handleUserFormChange} className="w-full rounded-xl border border-slate-300 px-3 py-2.5 focus:border-slate-500 focus:outline-none" required>
+                  <option value="">Select Gender</option>
+                  <option value="male">Male</option>
+                  <option value="female">Female</option>
+                  <option value="other">Other</option>
+                </select>
+                <input name="address" value={userForm.address} onChange={handleUserFormChange} placeholder="Address" className="w-full rounded-xl border border-slate-300 px-3 py-2.5 focus:border-slate-500 focus:outline-none" required />
+                <div className="flex justify-end gap-2 pt-2">
+                  <button type="submit" className="rounded-xl bg-slate-950 px-4 py-2.5 font-semibold text-white transition hover:bg-slate-800">Add User</button>
+                  <button type="button" onClick={handleUserModalClose} className="rounded-xl bg-slate-200 px-4 py-2.5 font-semibold text-slate-700 transition hover:bg-slate-300">Cancel</button>
+                </div>
+              </form>
+            </div>
           </div>
-        </div>
-        {/* Recent Donations List */}
-        <div className="bg-white rounded-xl shadow p-6 mt-10">
-          <h2 className="text-lg font-bold text-green-900 mb-4">Recent Donations</h2>
-          <ul className="space-y-3">
-            {recentDonations.map((don, idx) => (
-              <li key={idx} className="border-l-4 border-yellow-400 pl-4">
-                <div className="font-semibold text-yellow-800">{don.food}</div>
-                <div className="text-xs text-gray-400">Qty: {don.qty} | Donor: {don.donor} | {don.date}</div>
-              </li>
-            ))}
-          </ul>
-        </div>
-        <div className="h-10"></div>
+        )}
+
+        <style>{`
+          .admin-fade-up {
+            opacity: 0;
+            transform: translateY(14px);
+            animation: adminFadeUp 0.55s ease-out forwards;
+          }
+          @keyframes adminFadeUp {
+            to {
+              opacity: 1;
+              transform: translateY(0);
+            }
+          }
+        `}</style>
       </div>
     </div>
   );

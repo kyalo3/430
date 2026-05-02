@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '../lib/api';
+import team from '../assets/images/team.svg';
+import family from '../assets/images/family.svg';
 
 // Replace with real data fetching in production
 const initialVolunteer = {
@@ -108,6 +110,30 @@ function VolunteerDashboard() {
             >
               {loading ? 'Updating...' : 'Update Profile'}
             </button>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3 mb-8">
+          <div className="rounded-2xl overflow-hidden bg-white shadow border border-emerald-100">
+            <div className="h-28 bg-cover bg-center" style={{ backgroundImage: "url('/images/hero.webp')" }} />
+            <div className="p-3">
+              <p className="text-xs uppercase font-bold tracking-wide text-emerald-700">Mission View</p>
+              <p className="text-xs text-emerald-900 mt-1">Matches the home hero to reinforce the same mission while volunteering.</p>
+            </div>
+          </div>
+          <div className="rounded-2xl overflow-hidden bg-white shadow border border-emerald-100">
+            <img src={team} alt="Volunteer team" className="h-28 w-full object-contain bg-emerald-50" />
+            <div className="p-3">
+              <p className="text-xs uppercase font-bold tracking-wide text-emerald-700">Team Coordination</p>
+              <p className="text-xs text-emerald-900 mt-1">Highlights collaborative volunteer operations.</p>
+            </div>
+          </div>
+          <div className="rounded-2xl overflow-hidden bg-white shadow border border-emerald-100">
+            <img src={family} alt="Community beneficiaries" className="h-28 w-full object-contain bg-emerald-50" />
+            <div className="p-3">
+              <p className="text-xs uppercase font-bold tracking-wide text-emerald-700">Community Served</p>
+              <p className="text-xs text-emerald-900 mt-1">Keeps beneficiary impact visible during event tracking.</p>
+            </div>
           </div>
         </div>
 
