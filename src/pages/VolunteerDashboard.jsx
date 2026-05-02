@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../lib/api';
 import team from '../assets/images/team.svg';
 import family from '../assets/images/family.svg';
 
@@ -28,22 +28,18 @@ function VolunteerDashboard() {
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
 
-  // Fetch volunteer profile (replace with real API call)
+  // Fetch volunteer profile
   useEffect(() => {
-    // Example: fetch volunteer data from backend using token
-    // const fetchVolunteer = async () => {
-    //   try {
-    //     const token = localStorage.getItem('token');
-    //     const res = await axios.get('http://127.0.0.1:8000/volunteers/me', {
-    //       headers: { Authorization: `Bearer ${token}` }
-    //     });
-    //     setVolunteer(res.data);
-    //     setForm(res.data);
-    //   } catch (err) {
-    //     setError('Failed to fetch volunteer profile');
-    //   }
-    // };
-    // fetchVolunteer();
+    const fetchVolunteer = async () => {
+      try {
+        const res = await api.get('/volunteers/me');
+        setVolunteer(res.data);
+        setForm(res.data);
+      } catch (err) {
+        setError('Failed to fetch volunteer profile');
+      }
+    };
+    fetchVolunteer();
   }, []);
 
   // Handle form input changes
@@ -59,7 +55,6 @@ function VolunteerDashboard() {
     setSuccess('');
     setError('');
     try {
-      const token = localStorage.getItem('token');
       const volunteerId = volunteer.id;
       const payload = {
         first_name: form.first_name,
@@ -70,11 +65,7 @@ function VolunteerDashboard() {
         gender: form.gender,
         address: form.address
       };
-      await axios.put(
-         `http://127.0.0.1:8000/volunteers/${volunteerId}`,
-         payload,
-         { headers: { Authorization: `Bearer ${token}` } }
-       );
+      await api.put(`/volunteers/${volunteerId}`, payload);
       setVolunteer((prev) => ({ ...prev, ...payload }));
       setEditMode(false);
       setSuccess('Profile updated successfully!');
@@ -103,7 +94,12 @@ function VolunteerDashboard() {
             </button>
             <button
               className="bg-emerald-700 hover:bg-green-800 text-white px-6 py-2 rounded-lg font-semibold shadow-md transition-all duration-200"
-              onClick={() => window.location.href = '/'}
+              onClick={() => {
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                localStorage.removeItem('userRole');
+                window.location.href = '/';
+              }}
             >
               Logout
             </button>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../lib/api';
 import team from '../assets/images/team.svg';
 import family from '../assets/images/family.svg';
 
@@ -31,22 +31,18 @@ function RecipientDashboard() {
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
 
-  // Fetch recipient profile (replace with real API call)
+  // Fetch recipient profile
   useEffect(() => {
-    // Example: fetch recipient data from backend using token
-    // const fetchRecipient = async () => {
-    //   try {
-    //     const token = localStorage.getItem('token');
-    //     const res = await axios.get('http://127.0.0.1:8000/recipients/me', {
-    //       headers: { Authorization: `Bearer ${token}` }
-    //     });
-    //     setRecipient(res.data);
-    //     setForm(res.data);
-    //   } catch (err) {
-    //     setError('Failed to fetch recipient profile');
-    //   }
-    // };
-    // fetchRecipient();
+    const fetchRecipient = async () => {
+      try {
+        const res = await api.get('/recipients/me');
+        setRecipient(res.data);
+        setForm(res.data);
+      } catch (err) {
+        setError('Failed to fetch recipient profile');
+      }
+    };
+    fetchRecipient();
   }, []);
 
   const handleChange = (e) => {
@@ -60,16 +56,12 @@ function RecipientDashboard() {
     setSuccess('');
     setError('');
     try {
-      // Example: update recipient profile
-      // const token = localStorage.getItem('token');
-      // await axios.put(`http://127.0.0.1:8000/recipients/${recipient.id}`, form, {
-      //   headers: { Authorization: `Bearer ${token}` }
-      // });
+      await api.put(`/recipients/${recipient.id}`, form);
       setRecipient((prev) => ({ ...prev, ...form }));
       setEditMode(false);
       setSuccess('Profile updated successfully!');
     } catch (err) {
-      setError('Failed to update profile');
+      setError(err.response?.data?.detail || 'Failed to update profile');
     } finally {
       setLoading(false);
     }
@@ -95,6 +87,8 @@ function RecipientDashboard() {
               className="bg-red-700 hover:bg-red-800 text-white px-6 py-2 rounded-lg font-semibold shadow-md transition-all duration-200 ml-2"
               onClick={() => {
                 localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                localStorage.removeItem('userRole');
                 window.location.href = '/';
               }}
             >

@@ -1,10 +1,8 @@
 import React, { useState, useEffect, useContext } from 'react';
-import axios from 'axios';
+import api from '../lib/api';
 import { AuthContext } from '../context/AuthContext';
 import team from '../assets/images/team.svg';
 import family from '../assets/images/family.svg';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
 
 const initialDonor = {
   id: '',
@@ -72,11 +70,8 @@ function DonorDashboard() {
 
   const fetchDonations = async () => {
     try {
-      const token = localStorage.getItem('token');
       if (!currentUser?.id || currentUser.id === 'replace_with_real_id') return;
-      const res = await axios.get(`${API_URL}/donors/${currentUser.id}/donations/`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await api.get(`/donors/${currentUser.id}/donations/`);
       setDonations(res.data || []);
     } catch {
       setDonations([]);
@@ -85,10 +80,7 @@ function DonorDashboard() {
 
   const fetchSystemDonationCount = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const res = await axios.get(`${API_URL}/admin/donations`, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      });
+      const res = await api.get('/admin/donations');
       setSystemDonationCount(Array.isArray(res.data) ? res.data.length : 0);
     } catch {
       setSystemDonationCount(0);
@@ -132,7 +124,6 @@ function DonorDashboard() {
     }
 
     try {
-      const token = localStorage.getItem('token');
       if (!currentUser?.id || currentUser.id === 'replace_with_real_id') throw new Error('Invalid donor ID');
 
       const payload = {
@@ -141,11 +132,7 @@ function DonorDashboard() {
         price: Number(donationForm.price),
         donor_id: currentUser.id,
       };
-
-      await axios.post(`${API_URL}/donations/`, payload, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
+      await api.post('/donations/', payload);
       setDonationSuccess('Donation added successfully.');
       setDonationForm({
         food_item: '',
@@ -184,7 +171,6 @@ function DonorDashboard() {
     setError('');
 
     try {
-      const token = localStorage.getItem('token');
       const donorId = currentUser?.id;
       const payload = {
         first_name: form.first_name,
@@ -199,10 +185,7 @@ function DonorDashboard() {
         participating_locations: form.participating_locations,
         type_of_company: form.type_of_company,
       };
-
-      await axios.put(`${API_URL}/donors/${donorId}`, payload, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await api.put(`/donors/${donorId}`, payload);
 
       setDonor((prev) => ({ ...prev, ...payload }));
       setEditMode(false);
