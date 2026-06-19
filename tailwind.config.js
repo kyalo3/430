@@ -1,22 +1,14 @@
 import plugin from 'tailwindcss/plugin';
-import colors from 'tailwindcss/colors';
 import forms from '@tailwindcss/forms';
 
 export default {
-  purge: {
-    enabled: true,
-    content: ["./src/**/*.html", "./src/**/*.jsx", "./src/**/*.js", "./src/**/*.ts", "./src/**/*.tsx"],
-    options: {
-      safelist: [],
-    },
-  },
+  content: ["./index.html", "./src/**/*.{js,jsx,ts,tsx}"],
   theme: {
-    colors: {
-      ...colors,
-      emeraldCustom: '#99BD9B',
-      emeraldCustomDark:'#304A32',
-    },
     extend: {
+      colors: {
+        emeraldCustom: '#99BD9B',
+        emeraldCustomDark:'#304A32',
+      },
       minHeight: {
         "screen-75": "75vh",
       },
