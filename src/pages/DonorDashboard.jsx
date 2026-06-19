@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useCallback } from 'react';
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
 import team from '../assets/images/team.svg';
@@ -70,7 +70,7 @@ function DonorDashboard() {
     }
   }, [currentUser]);
 
-  const fetchDonations = async () => {
+  const fetchDonations = useCallback(async () => {
     try {
       const token = localStorage.getItem('token');
       if (!currentUser?.id || currentUser.id === 'replace_with_real_id') return;
@@ -81,7 +81,7 @@ function DonorDashboard() {
     } catch {
       setDonations([]);
     }
-  };
+  }, [currentUser?.id]);
 
   const fetchSystemDonationCount = async () => {
     try {
@@ -97,7 +97,7 @@ function DonorDashboard() {
 
   useEffect(() => {
     fetchDonations();
-  }, [currentUser?.id]);
+  }, [fetchDonations]);
 
   useEffect(() => {
     fetchSystemDonationCount();
