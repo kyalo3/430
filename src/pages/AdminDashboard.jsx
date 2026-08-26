@@ -2,13 +2,16 @@ import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import api from '../lib/api';
-import BrandLogo from '../components/BrandLogo';
+import DashboardShell from '../components/dashboard/DashboardShell';
+import StatusPill from '../components/dashboard/StatusPill';
+import { nextActions } from '../lib/donationStates';
 
 const TABS = [
   { id: 'overview', label: 'Overview' },
   { id: 'users', label: 'Users' },
   { id: 'donations', label: 'Donations' },
   { id: 'requests', label: 'Requests' },
+  { id: 'partners', label: 'Partners' },
   { id: 'audit', label: 'Audit' },
 ];
 
@@ -34,23 +37,6 @@ function formatWhen(value) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return String(value);
   return date.toLocaleString();
-}
-
-function StatusPill({ value }) {
-  const v = (value || 'unknown').toLowerCase();
-  const tone =
-    v === 'active' || v === 'ready' || v === 'fulfilled' || v === 'completed' || v === 'recipient_confirmed'
-      ? 'bg-emerald-100 text-emerald-800'
-      : v === 'suspended' || v === 'rejected' || v === 'failed' || v === 'not_ready'
-        ? 'bg-red-100 text-red-800'
-        : v === 'disputed' || v === 'expired'
-          ? 'bg-orange-100 text-orange-800'
-          : 'bg-slate-100 text-slate-700';
-  return (
-    <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize ${tone}`}>
-      {value || 'unknown'}
-    </span>
-  );
 }
 
 function ReasonDialog({ title, confirmLabel, onConfirm, onClose }) {
@@ -112,6 +98,8 @@ export default function AdminDashboard() {
   const [requests, setRequests] = useState([]);
   const [impact, setImpact] = useState({ count: 0, items: [] });
   const [audit, setAudit] = useState([]);
+  const [ops, setOps] = useState(null);
+  const [orgs, setOrgs] = useState([]);
   const [userQuery, setUserQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
   const [pendingAction, setPendingAction] = useState(null);
@@ -121,7 +109,7 @@ export default function AdminDashboard() {
     setLoading(true);
     setError('');
     try {
-      const [healthRes, usersRes, donationsRes, summaryRes, requestsRes, impactRes, auditRes] = await Promise.all([
+      const [healthRes, usersRes, donationsRes, summaryRes, requestsRes, impactRes, auditRes, opsRes, orgsRes] = await Promise.all([
         api.get('/health/ready').catch(() => ({ data: { status: 'not_ready', mongo: 'error' } })),
         api.get('/users/'),
         api.get('/admin/donations'),
@@ -129,6 +117,8 @@ export default function AdminDashboard() {
         api.get('/donation-requests/'),
         api.get('/impact/admin').catch(() => ({ data: { count: 0, items: [] } })),
         api.get('/platform/audit', { params: { limit: 50 } }).catch(() => ({ data: [] })),
+        api.get('/impact/operations').catch(() => ({ data: { empty: true } })),
+        api.get('/organisations/admin').catch(() => ({ data: [] })),
       ]);
       setHealth(healthRes.data);
       setUsers(usersRes.data || []);
@@ -137,6 +127,8 @@ export default function AdminDashboard() {
       setRequests(requestsRes.data || []);
       setImpact(impactRes.data || { count: 0, items: [] });
       setAudit(Array.isArray(auditRes.data) ? auditRes.data : []);
+      setOps(opsRes.data || null);
+      setOrgs(orgsRes.data || []);
     } catch (err) {
       setError(err.message || 'Failed to load admin data');
     } finally {
@@ -162,6 +154,7 @@ export default function AdminDashboard() {
       admins: byRole.admin || 0,
       suspended: users.filter((u) => u.status === 'suspended').length,
       donations: donations.length,
+      pendingReview: donations.filter((d) => ['submitted', 'under_review'].includes(d.status)).length,
       requests: requests.length,
       impact: impact.count || 0,
     };
@@ -214,6 +207,10 @@ export default function AdminDashboard() {
       );
     } else if (type === 'donation-status') {
       runAction(() => api.post(`/donations/${target.id}/transition`, { status: target.status, reason }));
+    } else if (type === 'org-verify') {
+      runAction(() => api.post(`/organisations/${target.id}/verify`, { reason }));
+    } else if (type === 'anonymise') {
+      runAction(() => api.post(`/users/${target.id}/anonymise`, null, { params: { reason } }));
     }
   };
 
@@ -227,32 +224,16 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-[#eef5f0]">
-      <header className="sticky top-0 z-40 border-b border-emerald-100 bg-white/95 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
-          <BrandLogo size="sm" />
-          <div className="flex items-center gap-2 sm:gap-3">
-            <span className="hidden text-sm text-emerald-800 sm:inline">
-              {currentUser?.username} · admin
-            </span>
-            <Link
-              to="/dashboard/reports"
-              className="rounded-lg px-3 py-2 text-sm font-semibold text-emerald-900 hover:bg-emerald-50"
-            >
-              Reports
-            </Link>
-            <button
-              type="button"
-              onClick={handleLogout}
-              className="rounded-lg bg-emerald-800 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-900"
-            >
-              Log out
-            </button>
-          </div>
-        </div>
-      </header>
-
-      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
+    <DashboardShell
+      wide
+      roleLabel={`${currentUser?.username || ''} · admin`}
+      extraNav={
+        <Link to="/dashboard/reports" className="rounded-lg px-3 py-2 text-sm font-semibold text-emerald-900 hover:bg-emerald-50">
+          Reports
+        </Link>
+      }
+      onSignOut={handleLogout}
+    >
         <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="text-sm font-bold uppercase tracking-[0.14em] text-orange-600">Operations</p>
@@ -308,7 +289,7 @@ export default function AdminDashboard() {
                   {[
                     { label: 'System', value: health?.status === 'ready' ? 'Ready' : 'Not ready', hint: `Mongo ${health?.mongo || 'unknown'}` },
                     { label: 'Users', value: counts.users, hint: `${counts.suspended} suspended` },
-                    { label: 'Donations', value: counts.donations, hint: 'All listings' },
+                    { label: 'Donations', value: counts.donations, hint: `${counts.pendingReview} awaiting review` },
                     { label: 'Verified impact', value: counts.impact, hint: 'Confirmed fulfilments only' },
                   ].map((card) => (
                     <article key={card.label} className="rounded-2xl border border-emerald-100 bg-white p-5">
@@ -318,6 +299,21 @@ export default function AdminDashboard() {
                     </article>
                   ))}
                 </div>
+                {ops && !ops.empty && (
+                  <div className="grid gap-4 sm:grid-cols-3">
+                    {[
+                      ['Median hours to match', ops.median_hours_to_match ?? '—'],
+                      ['Median hours match→confirm', ops.median_hours_match_to_confirm ?? '—'],
+                      ['Exception rate', ops.exception_rate == null ? '—' : `${Math.round(ops.exception_rate * 100)}%`],
+                    ].map(([label, value]) => (
+                      <article key={label} className="rounded-2xl border border-emerald-100 bg-white p-5">
+                        <p className="text-xs font-bold uppercase tracking-wide text-emerald-700">{label}</p>
+                        <p className="mt-2 font-display text-2xl font-semibold text-emerald-950">{value}</p>
+                      </article>
+                    ))}
+                  </div>
+                )}
+                {ops?.methodology && <p className="text-xs text-emerald-800/70">{ops.methodology}</p>}
                 <div className="grid gap-4 sm:grid-cols-4">
                   {[
                     ['Donors', counts.donors],
@@ -331,6 +327,58 @@ export default function AdminDashboard() {
                     </div>
                   ))}
                 </div>
+                <article className="rounded-2xl border border-emerald-100 bg-white p-6">
+                  <h2 className="font-display text-xl font-semibold text-emerald-950">Review queue</h2>
+                  <p className="mt-1 text-sm text-emerald-800/75">Submitted listings must be verified before they become available.</p>
+                  {donations.filter((d) => ['submitted', 'under_review'].includes(d.status)).length === 0 ? (
+                    <EmptyState message="Nothing waiting for moderation." />
+                  ) : (
+                    <ul className="mt-4 space-y-3">
+                      {donations
+                        .filter((d) => ['submitted', 'under_review'].includes(d.status))
+                        .map((d) => (
+                          <li key={d.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-emerald-50 p-4">
+                            <div>
+                              <p className="font-semibold text-emerald-950">{d.food_item || d.title}</p>
+                              <p className="text-sm text-emerald-800/75">
+                                {d.quantity} {d.unit} · {d.approx_location || 'area private'}
+                              </p>
+                            </div>
+                            <div className="flex flex-wrap items-center gap-2">
+                              <StatusPill value={d.status} />
+                              {nextActions(d.status, 'admin')
+                                .filter((s) => ['under_review', 'available', 'rejected', 'cancelled'].includes(s))
+                                .map((status) => (
+                                  <button
+                                    key={status}
+                                    type="button"
+                                    disabled={busyId === d.id}
+                                    className="rounded-md bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-900 hover:bg-emerald-100"
+                                    onClick={() => {
+                                      const needsReason = ['rejected', 'cancelled'].includes(status);
+                                      if (needsReason) {
+                                        setPendingAction({
+                                          type: 'donation-status',
+                                          target: { id: d.id, status },
+                                          title: `Set donation to ${status}`,
+                                        });
+                                        return;
+                                      }
+                                      setBusyId(d.id);
+                                      runAction(() =>
+                                        api.post(`/donations/${d.id}/transition`, { status, reason: 'Admin verification' }),
+                                      );
+                                    }}
+                                  >
+                                    {status.replaceAll('_', ' ')}
+                                  </button>
+                                ))}
+                            </div>
+                          </li>
+                        ))}
+                    </ul>
+                  )}
+                </article>
                 <article className="rounded-2xl border border-emerald-100 bg-white p-6">
                   <h2 className="font-display text-xl font-semibold text-emerald-950">Recent audit</h2>
                   {audit.length === 0 ? (
@@ -434,6 +482,16 @@ export default function AdminDashboard() {
                                   >
                                     Delete
                                   </button>
+                                  {u.status !== 'anonymised' && (
+                                    <button
+                                      type="button"
+                                      disabled={self || busyId === u.id}
+                                      className="rounded-md bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-800 disabled:opacity-40"
+                                      onClick={() => setPendingAction({ type: 'anonymise', target: u, title: `Anonymise ${u.username}` })}
+                                    >
+                                      Anonymise
+                                    </button>
+                                  )}
                                 </div>
                               </td>
                             </tr>
@@ -518,7 +576,7 @@ export default function AdminDashboard() {
                                   }}
                                 >
                                   <option value="">Advance…</option>
-                                  {['under_review', 'available', 'matched', 'pickup_scheduled', 'rejected', 'cancelled'].map((s) => (
+                                  {nextActions(d.status, 'admin').map((s) => (
                                     <option key={s} value={s}>
                                       {s}
                                     </option>
@@ -595,6 +653,41 @@ export default function AdminDashboard() {
               </section>
             )}
 
+            {tab === 'partners' && (
+              <section className="rounded-2xl border border-emerald-100 bg-white p-6">
+                <h2 className="font-display text-xl font-semibold text-emerald-950">Partner organisations</h2>
+                <p className="mt-1 text-sm text-emerald-800/75">Verified names only appear in the public directory. Member identities are not published.</p>
+                {orgs.length === 0 ? (
+                  <EmptyState message="No partner organisations yet." />
+                ) : (
+                  <ul className="mt-4 space-y-3">
+                    {orgs.map((org) => (
+                      <li key={org.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-emerald-50 p-4">
+                        <div>
+                          <p className="font-semibold text-emerald-950">{org.name}</p>
+                          <p className="text-sm text-emerald-800/75">
+                            {org.type} · {org.approx_location || 'area private'}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <StatusPill value={org.status} />
+                          {org.status !== 'verified' && (
+                            <button
+                              type="button"
+                              className="rounded-md bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-900"
+                              onClick={() => setPendingAction({ type: 'org-verify', target: org, title: `Verify ${org.name}` })}
+                            >
+                              Verify
+                            </button>
+                          )}
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </section>
+            )}
+
             {tab === 'audit' && (
               <section className="rounded-2xl border border-emerald-100 bg-white p-6">
                 <h2 className="font-display text-xl font-semibold text-emerald-950">Audit log</h2>
@@ -620,7 +713,6 @@ export default function AdminDashboard() {
             )}
           </>
         )}
-      </main>
 
       {pendingAction && (
         <ReasonDialog
@@ -630,6 +722,6 @@ export default function AdminDashboard() {
           onConfirm={confirmPending}
         />
       )}
-    </div>
+    </DashboardShell>
   );
 }

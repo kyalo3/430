@@ -53,6 +53,24 @@ npm run dev
 
 Open http://localhost:5173 — Vite proxies `/api` → backend.
 
+### Local dashboard logins
+
+Seed one account per role (development only; refused when `APP_ENV=production`):
+
+```bash
+cd C:\Dev2\kyalo3\430_backend
+.\venv\Scripts\python.exe -m scripts.seed_dev_users
+```
+
+Accounts are listed in `src/lib/demo-accounts.js`. On http://localhost:5173 the login modal shows **Local demo logins** shortcuts.
+
+| Role | Username | Password | Dashboard |
+|------|----------|----------|-----------|
+| Admin | `admin` | `AdminShare1!` | `/dashboard/admin` |
+| Donor | `donor` | `ShareLocal1!` | `/dashboard/donor` |
+| Recipient | `recipient` | `ShareLocal1!` | `/dashboard/recipient` |
+| Volunteer | `volunteer` | `ShareLocal1!` | `/dashboard/volunteer` |
+
 ## Tests
 
 ```bash
@@ -90,6 +108,8 @@ From `C:\Dev2\kyalo3`: `docker compose up --build`
 
 - Do not commit `.env` files.
 - Dashboards are route-guarded in the UI; **backend RBAC is the security boundary**.
+- Sessions use HttpOnly cookies. The SPA does not persist access tokens.
+- Privacy settings: `/account/privacy`. Community guidance: `/guidance`.
 - Impact counters are verified fulfilments only — never invented.
 
 ## License

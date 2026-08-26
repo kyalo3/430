@@ -52,7 +52,14 @@ export default function Footer() {
                 </a>
               </li>
               <li>
-                <span className="text-emerald-200/50">Privacy-first by design</span>
+                <Link className="text-emerald-50/90 hover:text-orange-300" to="/guidance">
+                  Safety guidance
+                </Link>
+              </li>
+              <li>
+                <Link className="text-emerald-50/90 hover:text-orange-300" to="/account/privacy">
+                  Privacy settings
+                </Link>
               </li>
             </ul>
           </div>

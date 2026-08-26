@@ -8,29 +8,29 @@ Reference framework: *Winning Through Platforms* (Ted Moser, Charlotte Bloom, Om
 |------|--------------------------|------------|--------------------|--------|----------------|
 | Optimal Platform Role(s) | **Now** | Clear who Sustainashare is for | Role model: donor, recipient, volunteer, admin, partner | Documented + RBAC | % journeys with correct role at completion |
 | Customer Coalition Edge | **Now** | Multi-sided value without exposing vulnerability | Separate dashboards; privacy redaction | Implemented | Repeat participation by role |
-| Pivotal Persona Value | **Now** | First successful fulfilment | Onboarding checklist + next-best action | Next (UI) / Now (API lifecycle) | Time to first verified fulfilment |
+| Pivotal Persona Value | **Now** | First successful fulfilment | Onboarding checklist + next-best action | Implemented | Time to first verified fulfilment |
 | Platform-Wide Differentiators | **Now** | Trust + traceability | Lifecycle audit + impact from verified only | Implemented | Audit coverage of state changes |
-| Magnetic Offer Architecture | **Next** | Role CTAs: Donate / Request / Volunteer / Partner | Landing redesign | Next | Choose→Use conversion |
+| Magnetic Offer Architecture | **Now** | Role CTAs including Partner | Landing + organisation registration | Implemented | Choose→Use conversion |
 
 ## In-market advantage plays
 
 | Play | Horizon | User value | Mechanism | Status | Success metric |
 |------|---------|------------|-----------|--------|----------------|
-| Brand-Demand Lead Engine | **Next** | Understand mission before signup | Landing theory-of-change narrative | Next | Qualified registrations |
-| Lead-to-Sale Smoothing → registration-to-first-contribution | **Now** | Short register → first action | Progressive profile; protected dashboards | In progress | % users completing first contribution in 7d |
+| Brand-Demand Lead Engine | **Now** | Understand mission before signup | Landing theory-of-change narrative | Implemented | Qualified registrations |
+| Lead-to-Sale Smoothing → registration-to-first-contribution | **Now** | Short register → first action | Progressive profile; protected dashboards | Implemented | % users completing first contribution in 7d |
 | Success to Momentum | **Next** | Repeat giving/volunteering | Impact receipts; reminders | Next | 30-day repeat rate |
-| In-Use Enrichment | **Now** | Lifecycle clarity | Status machine + notifications adapter | Now (states) / Next (channels) | Notification relevance (opt-in rate) |
-| Catalytic Community | **Later** | Safe community learning | Guidance, campaigns, opt-in recognition | Later | Engagement without PII exposure |
-| Customer Renewal and Expansion | **Later** | Partner / org growth | Org membership + webhooks foundation | Later | Active partner orgs |
+| In-Use Enrichment | **Now** | Lifecycle clarity | Status machine + notifications + match reasons | Implemented | Notification relevance |
+| Catalytic Community | **Now** | Safe community learning | Guidance page; no public recipient profiles | Implemented (conservative) | Guidance visits; zero public recipient PII |
+| Customer Renewal and Expansion | **Now** | Partner / org growth | Org membership + admin verification | Implemented (v1) | Active verified partner orgs |
 
 ## Innovation advantage plays
 
 | Play | Horizon | User value | Mechanism | Status | Success metric |
 |------|---------|------------|-----------|--------|----------------|
 | Reimagined Flows | **Now** | End-to-end redistribution | Explicit donation & need state machines | Implemented | Fulfilment rate |
-| Extended Ecosystems | **Later** | NGO / retail / logistics | Versioned API + webhook stubs + flags | Prepared | Partner API adoption |
-| Better Data Deal | **Now** | Dignity & control | Consent, export/delete, minimisation | In progress | Completion of privacy workflows |
-| Brands Get Brains | **Later** | Assisted matching | Explainable rules first; AI deferred | Rules now; AI later | Match acceptance rate |
+| Extended Ecosystems | **Now** | NGO / retail / logistics | Versioned API + webhook stubs behind flags | Foundation shipped | Partner API adoption |
+| Better Data Deal | **Now** | Dignity & control | Consent, export/delete, minimisation | Implemented | Completion of privacy workflows |
+| Brands Get Brains | **Now** | Assisted matching | Explainable rules in recipient UI; AI deferred | Rules now; AI later | Match acceptance rate |
 | Reality Shifts | **N/A** | — | No speculative AI branding | Not currently appropriate | — |
 | Visibility for Good | **Now** | Honest impact | Verified-only metrics + methodology notes | Implemented | Public stats = API verified counts |
 
@@ -38,13 +38,13 @@ Reference framework: *Winning Through Platforms* (Ted Moser, Charlotte Bloom, Om
 
 | Play | Horizon | User value | Mechanism | Status | Success metric |
 |------|---------|------------|-----------|--------|----------------|
-| Full-Journey Engagement | **Now** | Choose + Use coverage | Auth, dashboards, lifecycle APIs | In progress | Journey completion rate |
-| Dynamic Segmentation | **Next** | Relevant tasks by role/area | Service area + eligibility rules | Next | Assignment acceptance rate |
+| Full-Journey Engagement | **Now** | Choose + Use coverage | Auth, dashboards, lifecycle APIs | Implemented | Journey completion rate |
+| Dynamic Segmentation | **Now** | Relevant tasks by role/area | Volunteer service_area eligibility | Implemented | Assignment acceptance rate |
 | Agile Content | **Next** | Guidance without clutter | Safety/donation quality content | Next | Helpful-content CTR |
-| Adaptive Innovation | **Later** | Iterate safely | Feature flags | Later | Flagged rollout success |
+| Adaptive Innovation | **Now** | Iterate safely | `FEATURE_WEBHOOKS` / `FEATURE_OBJECT_STORAGE` | Implemented | Flagged rollout success |
 | Enterprise Body, Mind and Soul | **Now** | Reliable ops | Health, CI, runbooks, Docker | Implemented | Uptime / MTTR |
-| Collaborative Go to Market | **Later** | Institutional partners | Partner profiles | Later | Partner-sourced donations |
-| Growth Operations | **Now** | Measurable growth | Event taxonomy + north-star | In progress | Verified fulfilments / area / week |
+| Collaborative Go to Market | **Now** | Institutional partners | Verified partner directory (names only) | Implemented (v1) | Partner-sourced donations |
+| Growth Operations | **Now** | Measurable growth | Event taxonomy + operations metrics + north-star | Implemented | Verified fulfilments / area / week |
 
 ## Choose Journey vs Use Journey
 

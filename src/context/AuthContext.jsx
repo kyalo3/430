@@ -1,5 +1,5 @@
 import { createContext, useState, useEffect, useContext } from 'react';
-import api, { setAccessToken, setCsrfToken, clearClientAuth } from '../lib/api';
+import api, { setCsrfToken, clearClientAuth } from '../lib/api';
 
 export const AuthContext = createContext(null);
 
@@ -13,14 +13,13 @@ export const AuthProvider = ({ children }) => {
   const [userToken, setUserToken] = useState(null);
 
   const applySession = (payload) => {
-    if (payload?.access_token) {
-      setAccessToken(payload.access_token);
-      setUserToken(payload.access_token);
-    }
     if (payload?.csrf_token) setCsrfToken(payload.csrf_token);
     if (payload?.user) {
       setCurrentUser(payload.user);
       setUserRole(payload.user.role);
+      setUserToken(true);
+    } else if (payload?.csrf_token) {
+      setUserToken(true);
     }
   };
 
@@ -29,17 +28,6 @@ export const AuthProvider = ({ children }) => {
     setCurrentUser(res.data);
     setUserRole(res.data.role);
     return res.data;
-  };
-
-  const signUp = async (username, email, password, role) => {
-    try {
-      await api.post('/register', { user: { username, email, role, password } });
-      await signIn(username, password);
-      setShowDonorRec(true);
-    } catch (err) {
-      setError(err.message);
-      throw err;
-    }
   };
 
   const signIn = async (identifier, password) => {
@@ -51,11 +39,25 @@ export const AuthProvider = ({ children }) => {
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       });
       applySession(response.data);
-      if (!response.data.user) await fetchCurrentUser();
+      let user = response.data.user;
+      if (!user) user = await fetchCurrentUser();
       setLoading(false);
+      return user;
     } catch (err) {
       setError(err.message);
       setLoading(false);
+      throw err;
+    }
+  };
+
+  const signUp = async (username, email, password, role) => {
+    try {
+      await api.post('/register', { user: { username, email, role, password } });
+      const user = await signIn(username, password);
+      setShowDonorRec(true);
+      return user;
+    } catch (err) {
+      setError(err.message);
       throw err;
     }
   };

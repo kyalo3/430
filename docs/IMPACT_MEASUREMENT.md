@@ -21,3 +21,8 @@ Meal equivalents, monetary value, carbon/waste tonnes.
 - Public aggregate: `GET /impact/summary`
 - Donor: `GET /impact/mine`
 - Admin: `GET /impact/admin`
+- Admin operations: `GET /impact/operations` (median times, exception rate, fulfilment rate; null when insufficient history)
+
+## Operations notes
+
+Times are computed from donation `history` timestamps. Empty or incomplete journeys do not produce invented durations.

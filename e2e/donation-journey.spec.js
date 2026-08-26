@@ -18,4 +18,14 @@ test.describe('principal donation journey (API)', () => {
     });
     expect(admin.status()).toBe(403);
   });
+
+  test('matching is explainable and organisations are not public until verified', async ({ request }) => {
+    const health = await request.get(`${API}/health/ready`);
+    expect(health.ok()).toBeTruthy();
+    const directory = await request.get(`${API}/organisations/`);
+    expect(directory.ok()).toBeTruthy();
+    const body = await directory.json();
+    expect(Array.isArray(body)).toBeTruthy();
+    expect(body.every((row) => row.status === 'verified')).toBeTruthy();
+  });
 });

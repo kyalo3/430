@@ -1,6 +1,4 @@
 import { Formik, Form, Field, ErrorMessage } from 'formik';
-import axios from 'axios';
-import { useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import * as Yup from 'yup';
 import countyData from '../../counties';
@@ -8,12 +6,11 @@ import businessCategories from '../../business';
 import Select from 'react-select';
 import 'react-phone-number-input/style.css'
 import PhoneInput from 'react-phone-number-input'
-import { AuthContext } from '../../context/AuthContext';
+import api from '../../lib/api';
 
 
 
 function DonorForm({ handleSwitch }) {
-  const { userToken } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const validationSchema = Yup.object({
@@ -103,7 +100,6 @@ function DonorForm({ handleSwitch }) {
 
   const handleDonorForm = async (values, { resetForm }) => {
     try {
-      console.log(userToken);
         const formdata = {
             first_name: values.firstName,
             last_name: values.lastName,
@@ -117,29 +113,12 @@ function DonorForm({ handleSwitch }) {
             services_interested_in: values.businessCategory,
             participating_locations: values.counties,
         }
-        
-        // Get token from localStorage
-        const token = localStorage.getItem('token');
-        
-        const response = await axios.post('http://127.0.0.1:8000/donors/', formdata, {
-          headers: {
-            "Authorization": `Bearer ${token}`
-        }
-        });
 
-        console.log('Donor created successfully:', response.data);
-        
-        // Set user role to donor
-        localStorage.setItem('userRole', 'donor');
-        
+        await api.post('/donors/', formdata);
         resetForm();
-        // Redirect to donor dashboard
         navigate('/dashboard/donor');
     } catch (error) {
         console.error('Error submitting form:', error);
-        if (error.response) {
-          console.error('Error response:', error.response.data);
-        }
     }
   };
 

@@ -39,7 +39,7 @@ Living plan. Update as phases complete.
 - [x] engines / .nvmrc
 - [x] Remove dead App.js / DonorDashboard_new / api.ts
 - [~] Dependency upgrades (pinned compatible set)
-- [~] Incremental TypeScript (JS API client shipped; domain TS deferred)
+- [~] Incremental TypeScript (JS API client shipped; `src/types/platform.ts` domain models added)
 
 ## Phase 3 — Core interaction
 
@@ -54,13 +54,25 @@ Living plan. Update as phases complete.
 
 - [x] Landing: mission, privacy, role CTAs (honest empty impact)
 - [x] Protected role dashboards
+- [x] Local demo accounts for admin/donor/recipient/volunteer (`scripts.seed_dev_users`)
+- [x] Donor/recipient/volunteer/admin dashboards rebuilt around the verified journey (no retail/KES goals)
+- [x] Claim auto-matches so volunteers can accept handover
 - [x] Progressive onboarding checklist polish
 - [x] Notification adapters (in-app + no-op email/SMS)
+- [x] Partner organisations + membership (verified public names only)
+- [x] Explainable matching in recipient dashboard
+- [x] Volunteer service area / capacity
+- [x] Admin operational metrics (`/impact/operations`)
+- [x] Feature flags for webhooks and object storage (off by default)
+- [x] Email verification adapter (off unless `VERIFICATION_REQUIRED=true`)
+- [x] Principal journey integration test (org → list → verify → match → claim → handover → confirm → impact)
 
 ## Phase 5 — Visibility & growth
 
 - [x] Verified impact API + methodology notes
-- [x] Privacy/consent foundations + export/delete
+- [x] Privacy settings UI, self-service anonymisation, catalogue redaction, login lockout
+- [x] Community safety guidance (no public recipient profiles)
+- [x] Cookie-only SPA session (access JWT not kept in memory or localStorage)
 - [x] Kenya compliance checklist (non-claiming)
 - [x] Choose/Use event taxonomy (session store; no third-party tracker)
 

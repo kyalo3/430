@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-d
 import { lazy, Suspense, useState } from 'react';
 import Landing from './pages/Landing';
 import RoleRoute from './components/RoleRoute';
+import PrivateRoute from './components/PrivateRoute';
 import ErrorBoundary from './components/ErrorBoundary';
 import RouteMeta from './components/RouteMeta';
 import '@fortawesome/fontawesome-free/css/all.min.css';
@@ -16,6 +17,8 @@ const RecipientDashboard = lazy(() => import('./pages/RecipientDashboard'));
 const VolunteerDashboard = lazy(() => import('./pages/VolunteerDashboard'));
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
 const Reports = lazy(() => import('./pages/Reports'));
+const AccountPrivacy = lazy(() => import('./pages/AccountPrivacy'));
+const GuidancePage = lazy(() => import('./pages/GuidancePage'));
 
 function App() {
   const [popupType, setPopupType] = useState('');
@@ -51,6 +54,15 @@ function App() {
             />
             <Route path="/shop" element={<ShoppingPage />} />
             <Route path="/faqs" element={<FaqsPage />} />
+            <Route path="/guidance" element={<GuidancePage />} />
+            <Route
+              path="/account/privacy"
+              element={
+                <PrivateRoute>
+                  <AccountPrivacy />
+                </PrivateRoute>
+              }
+            />
             <Route path="/shop/collection/:category" element={<CollectionsPage />} />
             <Route path="/shop/collection/:category/:product/:productid" element={<ProductPage />} />
             <Route

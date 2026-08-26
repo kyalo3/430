@@ -21,7 +21,7 @@
 | F05 | Backend git submodule `sustainashare_backend` | P1 | `.gitmodules` | Keep; document dual-repo workflow |
 | F06 | JWT in `localStorage` | P0 | AuthContext | HttpOnly cookies via same-origin proxy |
 | F07 | Dashboards unprotected in live `App.jsx` | P0 | App.jsx routes | Wire PrivateRoute + RoleRoute |
-| F08 | Inconsistent API base URLs / hard-coded localhost | P0 | Reports, Admin, DonorForm | Single API client |
+| F08 | Inconsistent API base URLs / hard-coded localhost | P0 | Reports, Admin, DonorForm | Closed: DonorForm uses the shared API client; no localStorage token |
 | F09 | CORS `allow_origins=["*"]` + `allow_credentials=True` | P0 | main.py | Env allowlist |
 | F10 | Hard-coded default admin `admin`/`admin1` (orphaned by duplicate app) | P0 | main.py | Remove; CLI bootstrap |
 | F11 | Duplicate `app = FastAPI()` — second overwrites first | P0 | main.py | Single app + lifespan |

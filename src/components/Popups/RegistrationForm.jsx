@@ -1,7 +1,9 @@
-import { useContext, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
+import { dashboardPathForRole } from '../../lib/demo-accounts';
 
 const ROLES = [
   {
@@ -44,11 +46,13 @@ function strengthLabelFor(score, password) {
 }
 
 function RegistrationForm({ handleSwitch }) {
-  const { signUp } = useContext(AuthContext);
+  const { signUp, currentUser, userRole } = useContext(AuthContext);
+  const navigate = useNavigate();
   const [serverError, setServerError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [pendingRedirect, setPendingRedirect] = useState(false);
 
   const validation = Yup.object({
     username: Yup.string().min(3, 'At least 3 characters').required('Username is required'),
@@ -68,16 +72,27 @@ function RegistrationForm({ handleSwitch }) {
     acceptTerms: Yup.boolean().oneOf([true], 'Please accept the privacy notice to continue'),
   });
 
+  useEffect(() => {
+    if (!pendingRedirect) return;
+    const role = userRole || currentUser?.role;
+    if (!role) return;
+    navigate(dashboardPathForRole(role), { replace: true });
+  }, [pendingRedirect, userRole, currentUser, navigate]);
+
   const handleRegister = async (values, actions) => {
     setServerError('');
     setSuccessMsg('');
     try {
-      await signUp(values.username, values.email, values.password, values.role);
+      const user = await signUp(values.username, values.email, values.password, values.role);
       setSuccessMsg('Account created. Taking you to your dashboard…');
+      setPendingRedirect(true);
+      const path = dashboardPathForRole(user?.role);
+      if (path !== '/') navigate(path, { replace: true });
       actions.resetForm();
     } catch (error) {
       const msg = error.response?.data?.detail || error.response?.data || error.message || 'Registration failed';
       setServerError(typeof msg === 'string' ? msg : JSON.stringify(msg));
+      setPendingRedirect(false);
     }
     actions.setSubmitting(false);
   };

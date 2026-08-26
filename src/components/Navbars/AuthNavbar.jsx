@@ -5,7 +5,7 @@ import BrandLogo from '../BrandLogo';
 const NAV_LINKS = [
   { href: '/#how-it-works', label: 'How it works' },
   { href: '/#journeys', label: 'Journeys' },
-  { href: '/#voices', label: 'Voices' },
+  { href: '/guidance', label: 'Guidance', isRoute: true },
   { href: '/faqs', label: 'FAQs', isRoute: true },
   { href: '/shop', label: 'Browse surplus', isRoute: true },
 ];

@@ -20,6 +20,10 @@ export function setAccessToken(token) {
   memoryAccessToken = token || null;
 }
 
+export function getAccessToken() {
+  return memoryAccessToken;
+}
+
 export function setCsrfToken(token) {
   memoryCsrf = token || null;
   if (token) sessionStorage.setItem('ss_csrf', token);
@@ -53,15 +57,14 @@ api.interceptors.response.use(
   async (error) => {
     const status = error.response?.status;
     const original = error.config;
-    if (status === 401 && original && !original._retry) {
+    const url = String(original?.url || '');
+    const skipRefresh = /\/(token|refresh|logout|register)/.test(url);
+    if (status === 401 && original && !original._retry && !skipRefresh) {
       original._retry = true;
       try {
-        const refreshed = await axios.post(
-          `${baseURL}/auth/refresh`.replace(/\/api\/auth/, '/api/auth'),
-          {},
-          { withCredentials: true, baseURL }
-        );
-        // refresh path
+        const refreshed = await axios.post(`${baseURL}/refresh`, {}, { withCredentials: true, timeout: 20000 });
+        if (refreshed.data?.csrf_token) setCsrfToken(refreshed.data.csrf_token);
+        return api(original);
       } catch (_) {
         clearClientAuth();
       }

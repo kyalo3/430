@@ -9,6 +9,8 @@ export const EVENTS = {
   use_volunteer_accept: 'use.volunteer_accept',
   use_handover_progress: 'use.handover_progress',
   use_confirm_receipt: 'use.confirm_receipt',
+  use_privacy_export: 'use.privacy_export',
+  use_account_anonymise: 'use.account_anonymise',
 };
 
 export function track(event, payload = {}) {

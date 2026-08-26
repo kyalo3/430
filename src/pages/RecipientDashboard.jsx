@@ -4,6 +4,7 @@ import api from '../lib/api';
 import { track, EVENTS } from '../lib/analytics';
 import DashboardShell from '../components/dashboard/DashboardShell';
 import OnboardingChecklist from '../components/dashboard/OnboardingChecklist';
+import StatusPill from '../components/dashboard/StatusPill';
 
 export default function RecipientDashboard() {
   const { currentUser, signOut } = useContext(AuthContext);
@@ -15,6 +16,8 @@ export default function RecipientDashboard() {
   const [busy, setBusy] = useState('');
   const [needForm, setNeedForm] = useState({ item: '', quantity: 1, urgency: 'normal', approx_location: '' });
   const [profile, setProfile] = useState(null);
+  const [suggestions, setSuggestions] = useState([]);
+  const [matchMeta, setMatchMeta] = useState(null);
 
   const load = useCallback(async () => {
     setError('');
@@ -29,6 +32,15 @@ export default function RecipientDashboard() {
       setMine(claimed.data || []);
       setNeeds(reqs.data || []);
       setProfile(me.data);
+      const firstNeed = (reqs.data || [])[0];
+      if (firstNeed?.id) {
+        const ranked = await api.post('/matching/suggest', { need_id: firstNeed.id }).catch(() => ({ data: { results: [] } }));
+        setSuggestions(ranked.data?.results || []);
+        setMatchMeta({ engine: ranked.data?.engine, explanation: ranked.data?.explanation });
+      } else {
+        setSuggestions([]);
+        setMatchMeta(null);
+      }
     } catch (err) {
       setError(err.message || 'Unable to load your needs');
     }
@@ -43,7 +55,7 @@ export default function RecipientDashboard() {
     try {
       await api.post(`/donations/${id}/claim`, { reasons: ['Suitable category and quantity'] });
       track(EVENTS.use_claim, { donation_id: id });
-      setNotice('Listing reserved. A volunteer can complete handover. Exact public profiles are never shown.');
+      setNotice('Listing matched to you. A volunteer can now accept the handover. Your details stay off public pages.');
       await load();
     } catch (err) {
       setError(err.message);
@@ -69,7 +81,7 @@ export default function RecipientDashboard() {
   const submitNeed = async (e) => {
     e.preventDefault();
     if (!profile?.id) {
-      setError('Create a recipient profile first (contact details stay off public pages).');
+      setError('Your recipient profile could not be loaded. Refresh and try again.');
       return;
     }
     try {
@@ -89,6 +101,7 @@ export default function RecipientDashboard() {
     }
   };
 
+  const waitingConfirm = mine.filter((d) => d.status === 'delivered');
   const items = [
     { id: 'profile', title: 'Recipient profile on file', why: 'Needed for matching — not published publicly.', done: Boolean(profile?.id) },
     { id: 'need', title: 'Submit a need or claim suitable surplus', why: 'We match on category, quantity and area — not “deservingness”.', done: needs.length > 0 || mine.length > 0 },
@@ -98,18 +111,28 @@ export default function RecipientDashboard() {
   return (
     <DashboardShell
       roleLabel={`${currentUser?.username || ''} · recipient`}
-      extraNav={
-        <button type="button" className="rounded-lg bg-emerald-800 px-3 py-2 text-sm font-semibold text-white" onClick={async () => { await signOut(); window.location.href = '/'; }}>
-          Log out
-        </button>
-      }
+      onSignOut={async () => {
+        await signOut();
+        window.location.href = '/';
+      }}
     >
+      <p className="text-sm font-bold uppercase tracking-[0.14em] text-orange-600">Recipient</p>
       <h1 className="font-display text-3xl font-semibold text-emerald-950">Your support journey</h1>
       <p className="mt-2 max-w-2xl text-sm text-emerald-800/80">
         Private by design. Exact addresses stay hidden until an authorised handover.
       </p>
       <div className="mt-6">
-        <OnboardingChecklist role="recipient" items={items} />
+        <OnboardingChecklist
+          role="recipient"
+          items={items}
+          nextAction={
+            waitingConfirm.length > 0 ? (
+              <span className="rounded-full bg-orange-100 px-3 py-1 text-xs font-semibold text-orange-900">
+                {waitingConfirm.length} waiting for your confirmation
+              </span>
+            ) : null
+          }
+        />
       </div>
       {error && <p className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">{error}</p>}
       {notice && <p className="mt-4 rounded-xl border border-emerald-200 bg-white px-4 py-3 text-sm text-emerald-800">{notice}</p>}
@@ -128,6 +151,53 @@ export default function RecipientDashboard() {
             Submit need
           </button>
         </form>
+        {needs.length > 0 && (
+          <ul className="mt-4 space-y-2">
+            {needs.map((n) => (
+              <li key={n.id} className="flex items-center justify-between gap-3 rounded-xl bg-emerald-50 px-4 py-3 text-sm">
+                <span className="font-semibold text-emerald-950">
+                  {n.item} · qty {n.quantity}
+                </span>
+                <StatusPill value={n.status} />
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      <section className="mt-6 rounded-2xl border border-emerald-100 bg-white p-6">
+        <h2 className="font-display text-xl font-semibold text-emerald-950">Suggested matches</h2>
+        <p className="mt-1 text-sm text-emerald-800/75">
+          {matchMeta?.explanation || 'Transparent rules: category, quantity, area and urgency. No opaque AI.'}
+        </p>
+        {suggestions.length === 0 ? (
+          <p className="py-6 text-sm text-emerald-800/70">Submit a need to see why listings may fit — or claim from available surplus below.</p>
+        ) : (
+          <ul className="mt-4 space-y-3">
+            {suggestions.map((row) => (
+              <li key={row.donation?.id} className="rounded-xl border border-emerald-50 p-4">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <p className="font-semibold text-emerald-950">{row.donation?.food_item || row.donation?.title}</p>
+                    <p className="text-sm text-emerald-800/75">
+                      Score {row.score} · {row.donation?.quantity} {row.donation?.unit}
+                    </p>
+                    <ul className="mt-1 list-disc pl-4 text-xs text-emerald-800/80">
+                      {(row.reasons || []).map((reason) => (
+                        <li key={reason}>{reason}</li>
+                      ))}
+                    </ul>
+                  </div>
+                  {row.donation?.id && (
+                    <button type="button" disabled={busy === row.donation.id} className="rounded-lg bg-orange-500 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50" onClick={() => claim(row.donation.id)}>
+                      Claim
+                    </button>
+                  )}
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
       </section>
 
       <section className="mt-6 rounded-2xl border border-emerald-100 bg-white p-6">
@@ -141,7 +211,7 @@ export default function RecipientDashboard() {
                 <div>
                   <p className="font-semibold text-emerald-950">{d.food_item || d.title}</p>
                   <p className="text-sm text-emerald-800/75">
-                    {d.quantity} {d.unit} · {d.approx_location || 'Area listed after match'} · {d.status}
+                    {d.quantity} {d.unit} · {d.approx_location || 'Area listed after match'}
                   </p>
                 </div>
                 <button type="button" disabled={busy === d.id} className="rounded-lg bg-orange-500 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50" onClick={() => claim(d.id)}>
@@ -163,13 +233,16 @@ export default function RecipientDashboard() {
               <li key={d.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-emerald-50 p-4">
                 <div>
                   <p className="font-semibold text-emerald-950">{d.food_item || d.title}</p>
-                  <p className="text-sm text-emerald-800/75">{d.status}</p>
+                  <p className="text-sm text-emerald-800/75">{d.quantity} {d.unit}</p>
                 </div>
-                {d.status === 'delivered' && (
-                  <button type="button" disabled={busy === d.id} className="rounded-lg bg-emerald-800 px-4 py-2 text-sm font-semibold text-white" onClick={() => confirm(d.id)}>
-                    Confirm receipt
-                  </button>
-                )}
+                <div className="flex items-center gap-2">
+                  <StatusPill value={d.status} />
+                  {d.status === 'delivered' && (
+                    <button type="button" disabled={busy === d.id} className="rounded-lg bg-emerald-800 px-4 py-2 text-sm font-semibold text-white" onClick={() => confirm(d.id)}>
+                      Confirm receipt
+                    </button>
+                  )}
+                </div>
               </li>
             ))}
           </ul>

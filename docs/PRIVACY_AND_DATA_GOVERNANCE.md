@@ -11,9 +11,12 @@
 ## Rights workflows
 
 - `GET /platform/privacy-notice`
-- `POST /platform/consent`
-- `GET /platform/me/export`
-- `POST /platform/me/delete-request`
+- `POST /platform/consent` with purposes: `impact_story`, `photograph`, `identity_publication`, `analytics`, `operational_updates`
+- `GET /platform/me/export` — account, listings, needs, consents, notifications, organisation memberships
+- `POST /platform/me/delete-request` with `{ "confirmation": "DELETE" }` — immediate anonymisation and session revocation
+- `POST /users/{id}/anonymise?reason=` — administrator anonymisation with audit reason
+
+Exact addresses and recipient identity stay off catalogue and public pages. Optional stories or photographs require explicit opt-in consent.
 
 ## Kenya-focused checklist (non-claiming)
 

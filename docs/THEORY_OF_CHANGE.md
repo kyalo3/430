@@ -38,10 +38,18 @@ Verified donor lists a suitable resource → Sustainashare connects it to a legi
 | Need / donation-request capture | Activities: needs capture | Faster access to resources | Implemented (hardened) |
 | Rules-based matching with explainability | Activities: matching | Successful matches | Implemented (v1 rules) |
 | Volunteer assignment & handover evidence | Activities: delivery | Traceable handovers | Implemented (v1) |
+| Partner organisations + membership | Inputs: partner organisations | Bulk surplus / logistics without public recipient exposure | Implemented (pending admin verification) |
+| Explainable match suggestions in recipient dashboard | Activities: matching | Successful matches, trust | Implemented (rules_v1 in UI) |
+| Volunteer service area / capacity | Activities: delivery | Safer assignments | Implemented |
+| Operational time/rate metrics | Outputs → outcomes | Measurable coordination | Implemented (history-based, nullable) |
 | Recipient confirmation | Activities: confirmation | Verifiable completion | Implemented |
 | Impact records from completed journeys only | Outputs → outcomes | Measurable, honest impact | Implemented |
 | HttpOnly session cookies + RBAC | Trust / safety | Trustworthy platform | Implemented |
-| Privacy: redact recipient PII in public APIs | Dignity / non-surveillance | Trust, safer participation | Implemented |
+| Account lockout after failed logins | Trust / safety | Abuse resistance | Implemented |
+| Self-service export and anonymisation | Dignity / Better Data Deal | Trust, safer participation | Implemented |
+| Surplus catalogue redaction | Dignity / non-surveillance | Recipient privacy | Implemented |
+| Community safety guidance | Activities: participation | Safer coordination | Implemented |
+| Privacy settings (consent, export, delete) | Better Data Deal | Trust, purpose limitation | Implemented |
 | Audit events for admin & lifecycle changes | Accountability | Transparent giving | Implemented |
 | Health checks, CI, ops docs | Platform reliability | Sustained coordination | Implemented |
 | Public recipient profiles / leaderboards | — | **Not appropriate** | Explicitly rejected |

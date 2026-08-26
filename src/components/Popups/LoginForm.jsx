@@ -1,46 +1,47 @@
-import { useContext, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
+import { DEMO_ACCOUNTS, dashboardPathForRole, showDemoAuthShortcuts } from '../../lib/demo-accounts';
 
 const fieldClass =
   'mt-1 w-full rounded-lg border border-emerald-200 bg-white px-3 py-3 text-sm text-emerald-950 placeholder:text-slate-400 shadow-sm focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/30';
 
 function LoginForm({ handleSwitch }) {
-  const { signIn } = useContext(AuthContext);
+  const { signIn, currentUser, userRole } = useContext(AuthContext);
   const navigate = useNavigate();
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [pendingRedirect, setPendingRedirect] = useState(false);
 
   const validationSchemaLogin = Yup.object({
     userName: Yup.string().required('Username or email is required'),
     password: Yup.string().required('Password is required'),
   });
 
+  useEffect(() => {
+    if (!pendingRedirect) return;
+    const role = userRole || currentUser?.role;
+    if (!role) return;
+    navigate(dashboardPathForRole(role), { replace: true });
+  }, [pendingRedirect, userRole, currentUser, navigate]);
+
+  const completeLogin = async (identifier, password) => {
+    setErrorMessage('');
+    setSuccessMessage('');
+    const user = await signIn(identifier, password);
+    setSuccessMessage('Login successful. Opening your dashboard…');
+    setPendingRedirect(true);
+    const path = dashboardPathForRole(user?.role);
+    if (path !== '/') navigate(path, { replace: true });
+  };
+
   const handleLogin = async (values, { resetForm, setSubmitting }) => {
     try {
-      setErrorMessage('');
-      setSuccessMessage('');
-      await signIn(values.userName, values.password);
-      setSuccessMessage('Login successful. Redirecting…');
+      await completeLogin(values.userName, values.password);
       resetForm();
-
-      setTimeout(async () => {
-        try {
-          const { default: api } = await import('../../lib/api');
-          const me = await api.get('/users/me');
-          const role = me.data?.role;
-          if (role === 'donor') navigate('/dashboard/donor');
-          else if (role === 'recipient') navigate('/dashboard/recipient');
-          else if (role === 'volunteer') navigate('/dashboard/volunteer');
-          else if (role === 'admin') navigate('/dashboard/admin');
-          else setSuccessMessage('Login successful. Please complete your profile.');
-        } catch {
-          setSuccessMessage('Login successful.');
-        }
-      }, 300);
     } catch (error) {
       let message = 'Login failed. Check your credentials and try again.';
       if (error.response?.data?.detail) {
@@ -52,6 +53,7 @@ function LoginForm({ handleSwitch }) {
         message = error.message;
       }
       setErrorMessage(message);
+      setPendingRedirect(false);
       setSubmitting(false);
     }
   };
@@ -65,7 +67,7 @@ function LoginForm({ handleSwitch }) {
         helpers.setSubmitting(false);
       }}
     >
-      {({ isSubmitting, isValid, dirty }) => (
+      {({ isSubmitting, isValid, dirty, setFieldValue, setFieldTouched }) => (
         <Form className="space-y-4" autoComplete="on" noValidate>
           {errorMessage && (
             <div role="alert" className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
@@ -75,6 +77,34 @@ function LoginForm({ handleSwitch }) {
           {successMessage && (
             <div role="status" className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-800">
               {successMessage}
+            </div>
+          )}
+
+          {showDemoAuthShortcuts && (
+            <div className="rounded-lg border border-emerald-100 bg-emerald-50/70 px-3 py-2">
+              <p className="text-xs font-semibold uppercase tracking-wide text-emerald-800">Local demo logins</p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {DEMO_ACCOUNTS.map((account) => (
+                  <button
+                    key={account.role}
+                    type="button"
+                    className="rounded-full border border-emerald-200 bg-white px-3 py-1 text-xs font-semibold text-emerald-900 hover:bg-emerald-100"
+                    onClick={async () => {
+                      await setFieldValue('userName', account.username);
+                      await setFieldValue('password', account.password);
+                      setFieldTouched('userName', true, false);
+                      setFieldTouched('password', true, false);
+                      try {
+                        await completeLogin(account.username, account.password);
+                      } catch (error) {
+                        setErrorMessage(error.message || 'Demo login failed. Run the local seed script.');
+                      }
+                    }}
+                  >
+                    {account.label}
+                  </button>
+                ))}
+              </div>
             </div>
           )}
 

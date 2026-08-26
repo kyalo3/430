@@ -213,13 +213,12 @@ export default function Landing({ isOpen, popupType, togglePopup }) {
                 >
                   Browse surplus categories
                 </Link>
-                <button
-                  type="button"
-                  onClick={() => togglePopup('login')}
+                <Link
+                  to="/guidance"
                   className="rounded-xl border border-white/35 px-5 py-3.5 text-sm font-bold text-white hover:bg-white/10"
                 >
-                  Log in to your dashboard
-                </button>
+                  Safety guidance
+                </Link>
               </div>
             </div>
             <div className="relative">
