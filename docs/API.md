@@ -22,6 +22,8 @@ Statuses enforced server-side (see `THEORY_OF_CHANGE.md`).
 ## Matching / Impact / Health
 
 - `POST /matching/suggest` — rules engine with human-readable reasons
+- `GET /fulfilments/eligible` · `POST /fulfilments/{id}/accept` · `POST /fulfilments/{id}/progress` — volunteer handovers; exact details after accept
+- `GET /notifications/me` — in-app lifecycle notices (email/SMS adapter is no-op unless enabled)
 - `GET /impact/summary` — verified fulfilments only
 - `GET /health/live` · `GET /health/ready`
 

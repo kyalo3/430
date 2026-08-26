@@ -2,7 +2,6 @@ import { useContext, useState, useEffect} from 'react';
 import HeaderShop from '../components/Headers/HeaderShop';
 import CategoriesNavbar from '../components/Navbars/CategoriesNavbar';
 import ProductBar from '../components/Headers/ProductBar';
-import QuantityComponent from '../components/Toggles/QuantityComponent';
 import { ProductContext } from '../context/ProductContext';
 import ToggleButtons from '../components/Toggles/ToggleButtons';
 import Footer from '../components/Footers/Footer';
@@ -12,7 +11,6 @@ import ProductSlider from '../components/Sliders/ProductSlider';
 function ProductPage() {
   const { product } = useContext(ProductContext);
   const [productbar, setProductBar] = useState(false);
-  const [shopHeader, setHeader] = useState(true);
 
 
   useEffect(() => {
@@ -52,22 +50,18 @@ function ProductPage() {
             </div>
             <div className='flex flex-col w-3/4'>
               <div className='font-bold text-l'>
-                Ksh. {product.price}
+                Surplus listing example
               </div>
               <div className='font-thin text-sm mb-4'>
-                Tax included. Shipping calculated at checkout.
+                Not for sale. Redistribution after verification — no checkout.
               </div>
               <div className>
                 <div className='mb-2'>
-                  Status: <span className='text-emerald-800 font-bold text-sm'>In Stock</span>
+                  Status: <span className='text-emerald-800 font-bold text-sm'>Example category</span>
                 </div>
-                <div className='mb-2'>
-                  Quantity
-                </div>
-                <QuantityComponent/>
-                <button className='justify-end my-4 bg-orange-500 p-4 rounded font-bold text-white w-full mx-auto'>
-                  Add to cart
-                </button>
+                <a href="/#participate" className='inline-block justify-end my-4 bg-orange-500 p-4 rounded font-bold text-white w-full mx-auto text-center'>
+                  Join to donate or request
+                </a>
                 <div className='mb-2'>
                   Categories: <span className='text-emerald-500 font-light text-sm'>All Food, Fresh Fruits, Fresh Fruits & Vegetables, Fresh Vegetables</span>
                 </div>
@@ -82,11 +76,9 @@ function ProductPage() {
           <div className='flex justify-center mt-16 mb-4 border-b'>
             <ToggleButtons toggles={{first:"Description", second:"Specification"}}/>
           </div>
-          <p className='text-black-500 font-light text-l'>Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-            Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-            Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-            Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
-            Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+          <p className='text-black-500 font-light text-l'>
+            Example surplus category for discovery only. Register to list or request real resources. No payment, no cart.
+          </p>
 
           <div className='flex flex-col mt-12'>
             <div className='bg-slate-200 py-4 mb-4 justify-center rounded-m'>

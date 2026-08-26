@@ -3,6 +3,8 @@ import { AuthContext } from '../context/AuthContext';
 import api from '../lib/api';
 import team from '../assets/images/team.svg';
 import family from '../assets/images/family.svg';
+import OnboardingChecklist from '../components/dashboard/OnboardingChecklist';
+import { track, EVENTS } from '../lib/analytics';
 
 const initialDonor = {
   id: '',
@@ -41,8 +43,7 @@ function DonorDashboard() {
     brand: '',
     description: '',
     quantity: '',
-    price: '',
-    recipient_id: '',
+    approx_location: '',
   });
   const [donationLoading, setDonationLoading] = useState(false);
   const [donationError, setDonationError] = useState('');
@@ -126,21 +127,22 @@ function DonorDashboard() {
         brand: donationForm.brand,
         description: donationForm.description,
         quantity: Number(donationForm.quantity),
-        price: Number(donationForm.price),
         category: 'general',
         unit: 'units',
+        approx_location: donationForm.approx_location || undefined,
       };
 
-      await api.post('/donations/', payload);
+      const created = await api.post('/donations/', payload);
+      await api.post(`/donations/${created.data.id}/transition`, { status: 'submitted' });
+      track(EVENTS.use_donation_created, { donation_id: created.data.id });
 
-      setDonationSuccess('Donation submitted as draft. An administrator will verify before matching.');
+      setDonationSuccess('Listing submitted for review. Matching happens after verification — this is not a shop checkout.');
       setDonationForm({
         food_item: '',
         brand: '',
         description: '',
         quantity: '',
-        price: '',
-        recipient_id: '',
+        approx_location: '',
       });
       fetchDonations();
       fetchSystemDonationCount();
@@ -526,6 +528,22 @@ function DonorDashboard() {
           </div>
         </section>
 
+        <div className="mt-6">
+          <OnboardingChecklist
+            role="donor"
+            items={[
+              { id: 'list', title: 'List surplus for review', why: 'Verification before matching keeps the journey trustworthy.', done: donations.length > 0 },
+              { id: 'submit', title: 'Submit for moderation', why: 'Listings cannot skip review steps.', done: donations.some((d) => d.status && d.status !== 'draft') },
+              { id: 'impact', title: 'Wait for verified confirmation', why: 'Impact appears only after recipient confirmation — never invented counters.', done: donations.some((d) => ['recipient_confirmed', 'completed'].includes(d.status)) },
+            ]}
+            nextAction={
+              <button type="button" className="rounded-xl bg-orange-500 px-4 py-2 text-sm font-semibold text-white" onClick={() => document.getElementById('donation-composer')?.scrollIntoView({ behavior: 'smooth' })}>
+                List surplus
+              </button>
+            }
+          />
+        </div>
+
         <section className="dashboard-fade-up grid grid-cols-1 gap-4 md:grid-cols-3" style={{ animationDelay: '240ms' }}>
           <article className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-lg">
             <div className="h-36 bg-cover bg-center" style={{ backgroundImage: "url('/images/hero.webp')" }} />
@@ -765,13 +783,13 @@ function DonorDashboard() {
               <p className="mt-1 text-xs text-slate-600">Minimal steps. Fast entry.</p>
               <form onSubmit={handleDonationSubmit} className="mt-4 space-y-3">
                 <input name="food_item" value={donationForm.food_item} onChange={handleDonationChange} className="w-full rounded-xl border border-slate-300 px-3 py-2.5 focus:border-emerald-500 focus:outline-none" placeholder="Food item" required />
-                <input name="brand" value={donationForm.brand} onChange={handleDonationChange} className="w-full rounded-xl border border-slate-300 px-3 py-2.5 focus:border-emerald-500 focus:outline-none" placeholder="Brand" required />
-                <input name="description" value={donationForm.description} onChange={handleDonationChange} className="w-full rounded-xl border border-slate-300 px-3 py-2.5 focus:border-emerald-500 focus:outline-none" placeholder="Description" required />
+                <input name="brand" value={donationForm.brand} onChange={handleDonationChange} className="w-full rounded-xl border border-slate-300 px-3 py-2.5 focus:border-emerald-500 focus:outline-none" placeholder="Brand (optional)" />
+                <input name="description" value={donationForm.description} onChange={handleDonationChange} className="w-full rounded-xl border border-slate-300 px-3 py-2.5 focus:border-emerald-500 focus:outline-none" placeholder="Condition and handling notes" required />
                 <div className="grid grid-cols-2 gap-2">
                   <input name="quantity" value={donationForm.quantity} onChange={handleDonationChange} className="w-full rounded-xl border border-slate-300 px-3 py-2.5 focus:border-emerald-500 focus:outline-none" type="number" placeholder="Qty" required min="1" />
-                  <input name="price" value={donationForm.price} onChange={handleDonationChange} className="w-full rounded-xl border border-slate-300 px-3 py-2.5 focus:border-emerald-500 focus:outline-none" type="number" placeholder="Price" required min="0" />
+                  <input name="approx_location" value={donationForm.approx_location || ''} onChange={handleDonationChange} className="w-full rounded-xl border border-slate-300 px-3 py-2.5 focus:border-emerald-500 focus:outline-none" placeholder="Approx. area" />
                 </div>
-                <input name="recipient_id" value={donationForm.recipient_id} onChange={handleDonationChange} className="w-full rounded-xl border border-slate-300 px-3 py-2.5 focus:border-emerald-500 focus:outline-none" placeholder="Recipient ID" required />
+                <p className="text-xs text-slate-600">No recipient ID or payment. Matching assigns a verified need after review.</p>
                 <button type="submit" className="w-full rounded-xl bg-emerald-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-800" disabled={donationLoading}>
                   {donationLoading ? 'Saving...' : 'Submit Donation'}
                 </button>

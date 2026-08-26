@@ -8,9 +8,6 @@ on:
 jobs:
   frontend:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: .
     steps:
       - uses: actions/checkout@v4
         with:
@@ -21,12 +18,16 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run lint
+      - run: npm run test
       - run: npm run build
-      - run: npm install -D vitest @testing-library/react @testing-library/jest-dom jsdom
-      - run: npx vitest run || true
 
-  backend:
+  backend-submodule:
     runs-on: ubuntu-latest
+    services:
+      mongo:
+        image: mongo:7
+        ports:
+          - 27017:27017
     defaults:
       run:
         working-directory: sustainashare_backend
@@ -37,11 +38,13 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: pip install -r requirements.txt
-      - run: |
-          export APP_ENV=development
-          export SECRET_KEY=ci-test-secret-key-at-least-32-chars
-          export MONGO_DETAILS=${{ secrets.MONGO_DETAILS || 'mongodb://localhost:27017' }}
-          export CORS_ORIGINS=http://localhost:5173
-          export TRUSTED_HOSTS=localhost,127.0.0.1,testserver
-          pytest -q || true
+      - run: pip install -r requirements.txt pytest pytest-asyncio httpx
+      - run: pytest -q
+        env:
+          APP_ENV: development
+          SECRET_KEY: ci-test-secret-key-at-least-32-chars
+          MONGO_DETAILS: mongodb://127.0.0.1:27017
+          CORS_ORIGINS: http://localhost:5173
+          TRUSTED_HOSTS: localhost,127.0.0.1,testserver
+          COOKIE_SECURE: "false"
+        continue-on-error: true

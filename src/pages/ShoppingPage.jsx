@@ -16,18 +16,18 @@ const ShoppingPage = () => {
   const steps = [
     {
       icon: <LuShoppingBasket size={24} />,
-      title: 'Select Your Order',
-      description: 'Customize your box by shopping a variety of products on offer on a weekly basis.'
+      title: 'Browse surplus categories',
+      description: 'See what kinds of resources communities typically redistribute — not a retail catalogue.',
     },
     {
       icon: <LuPackage size={24} />,
-      title: 'Preparing your cart items',
-      description: 'Set a schedule time for same day or next day delivery.'
+      title: 'Register to list or request',
+      description: 'Create a role-based account. Listings are verified before they become available.',
     },
     {
       icon: <LuTruck size={24} />,
-      title: 'Delivery To Your Home',
-      description: 'Collect your groceries at your own convenient time or have it delivered.'
+      title: 'Match and handover',
+      description: 'Volunteers complete authorised handovers. Impact is counted only after confirmation.',
     }
   ];
 
@@ -40,8 +40,8 @@ const ShoppingPage = () => {
         <ImageGrid/>
         <ProductSlider props ={{title:"Featured Products", rows:2}}/>
         <div className="container mx-auto my-8 bg-white rounded-lg py-16 px-10 min-h-400">
-          <h2 className="font-bold text-2xl mb-4 text-center text-emeraldCustomDark">How It Works</h2>
-          <p className="text-center mb-8 text-gray-600">Everyday low prices. Order anytime anyday</p>
+          <h2 className="font-bold text-2xl mb-4 text-center text-emeraldCustomDark">How redistribution works</h2>
+          <p className="text-center mb-8 text-gray-600">This browse surface is not checkout. There is no cart and no payment.</p>
           <div className="flex justify-around gap-16 px-12">
             {steps.map((step, index) => (
               <div key={index} className="text-center">
@@ -73,22 +73,18 @@ const ShoppingPage = () => {
                 <div className="px-4">
                   <div className="pr-12">
                     <h1 className="text-white font-semibold text-5xl">
-                    Fast, Free Shipping,<br/>
-                    Contactless Delivery.
+                    Surplus categories,<br/>
+                    verified journeys.
                     </h1>
                     <p className="mt-4 text-lg text-slate-200">
-                    Try it now, risk free!
+                    Browse examples, then join as a donor, recipient, or volunteer. We never invent impact counters.
                     </p>
-                    <button
-                      type="button"
-                      className="w-48 mt-8 items-center inline-flex justify-center align-c enter rounded-md border border-transparent shadow-sm px-4 py-4 bg-orange-500 text-m font-medium text-white hover:bg-text-inverse focus:outline-none"
-                      id="options-menu"
-                      aria-haspopup="true"
-                      aria-expanded="true"
-                      // onClick={() => togglePopup('register')}
+                    <a
+                      href="/"
+                      className="w-48 mt-8 items-center inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-4 bg-orange-500 text-m font-medium text-white"
                     >
-                      Shop Now <FaArrowRightLong className='ml-4' />
-                    </button>
+                      Join to participate <FaArrowRightLong className='ml-4' />
+                    </a>
                   </div>
                 </div>
               </div>

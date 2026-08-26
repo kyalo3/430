@@ -3,7 +3,6 @@ import BrandLogo from '../BrandLogo';
 import SearchBar from '../SearchBars/SearchBar';
 import { FiUser } from "react-icons/fi";
 import { BiSearch } from 'react-icons/bi';
-import { TiShoppingCart } from "react-icons/ti";
 
 import CategoriesNavbar from '../Navbars/CategoriesNavbar';
 
@@ -45,11 +44,7 @@ const HeaderShop = () => {
           <div className="flex items-center">
             {showSearchBar && <SearchBar onSearch={handleSearch}/>}
             {!showSearchBar && <BiSearch size={24} onClick={handleSearchClick} className='text-emerald-800 ml-4'/>}
-            <div>
-              <div className='min-w-8 rounded-lg absolute top-2 bg-custom-emerald z-50'></div>
-              <TiShoppingCart size={24} className='text-emerald-800 ml-4'/>
-            </div>
-            <FiUser size={24} className='text-emerald-800 ml-4'/>
+            <FiUser size={24} className='text-emerald-800 ml-4' aria-label="Account" />
           </div>
         </div>
       </div>

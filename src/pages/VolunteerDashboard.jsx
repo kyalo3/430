@@ -1,245 +1,158 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import team from '../assets/images/team.svg';
-import family from '../assets/images/family.svg';
+import { useCallback, useContext, useEffect, useState } from 'react';
+import { AuthContext } from '../context/AuthContext';
+import api from '../lib/api';
+import { track, EVENTS } from '../lib/analytics';
+import DashboardShell from '../components/dashboard/DashboardShell';
+import OnboardingChecklist from '../components/dashboard/OnboardingChecklist';
 
-// Replace with real data fetching in production
-const initialVolunteer = {
-  id: 'replace_with_real_id',
-  first_name: 'John',
-  last_name: 'Volunteer',
-  email: 'john.volunteer@email.com',
-  id_no: '87654321',
-  phone_number: '+254798765432',
-  gender: 'Male',
-  address: 'Nairobi, Kenya',
-  status: 'Active Volunteer',
-  events_attended: [
-    { name: 'Food Drive', date: '2025-09-05' },
-    { name: 'Community Clean Up', date: '2025-08-20' }
-  ]
-};
-
-function VolunteerDashboard() {
-  const [volunteer, setVolunteer] = useState(initialVolunteer);
-  const [editMode, setEditMode] = useState(false);
-  const [form, setForm] = useState({ ...initialVolunteer });
-  const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState('');
+export default function VolunteerDashboard() {
+  const { currentUser, signOut } = useContext(AuthContext);
+  const [eligible, setEligible] = useState([]);
+  const [mine, setMine] = useState([]);
   const [error, setError] = useState('');
+  const [notice, setNotice] = useState('');
+  const [busy, setBusy] = useState('');
+  const [evidence, setEvidence] = useState('');
 
-  // Fetch volunteer profile (replace with real API call)
-  useEffect(() => {
-    // Example: fetch volunteer data from backend using token
-    // const fetchVolunteer = async () => {
-    //   try {
-    //     const token = localStorage.getItem('token');
-    //     const res = await axios.get('http://127.0.0.1:8000/volunteers/me', {
-    //       headers: { Authorization: `Bearer ${token}` }
-    //     });
-    //     setVolunteer(res.data);
-    //     setForm(res.data);
-    //   } catch (err) {
-    //     setError('Failed to fetch volunteer profile');
-    //   }
-    // };
-    // fetchVolunteer();
-  }, []);
-
-  // Handle form input changes
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
-  };
-
-  // Handle submit profile
-  const handleSubmit = async (e) => {
-    if (e) e.preventDefault();
-    setLoading(true);
-    setSuccess('');
+  const load = useCallback(async () => {
     setError('');
     try {
-      const token = localStorage.getItem('token');
-      const volunteerId = volunteer.id;
-      const payload = {
-        first_name: form.first_name,
-        last_name: form.last_name,
-        email: form.email,
-        id_no: form.id_no,
-        phone_number: form.phone_number,
-        gender: form.gender,
-        address: form.address
-      };
-      await axios.put(
-         `http://127.0.0.1:8000/volunteers/${volunteerId}`,
-         payload,
-         { headers: { Authorization: `Bearer ${token}` } }
-       );
-      setVolunteer((prev) => ({ ...prev, ...payload }));
-      setEditMode(false);
-      setSuccess('Profile updated successfully!');
+      const [el, my] = await Promise.all([api.get('/fulfilments/eligible'), api.get('/fulfilments/mine')]);
+      setEligible(el.data || []);
+      setMine(my.data || []);
     } catch (err) {
-      setError(err.response?.data?.detail || 'Failed to update profile');
+      setError(err.message || 'Unable to load assignments');
+    }
+  }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  const accept = async (id) => {
+    setBusy(id);
+    try {
+      await api.post(`/fulfilments/${id}/accept`);
+      track(EVENTS.use_volunteer_accept, { donation_id: id });
+      setNotice('Assignment accepted. Exact handover details are now visible.');
+      await load();
+    } catch (err) {
+      setError(err.message);
     } finally {
-      setLoading(false);
+      setBusy('');
     }
   };
 
+  const progress = async (id, status) => {
+    setBusy(id);
+    try {
+      await api.post(`/fulfilments/${id}/progress`, { status, note: evidence || undefined });
+      track(EVENTS.use_handover_progress, { donation_id: id, status });
+      setEvidence('');
+      setNotice(`Marked ${status.replaceAll('_', ' ')}.`);
+      await load();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setBusy('');
+    }
+  };
+
+  const items = [
+    { id: 'profile', title: 'Keep your profile current', why: 'So coordinators know how to reach you safely.', done: Boolean(currentUser?.email) },
+    { id: 'accept', title: 'Accept an eligible handover', why: 'Exact pickup details stay hidden until you take the task.', done: mine.length > 0 },
+    { id: 'complete', title: 'Confirm pickup and delivery', why: 'Impact is only counted after the recipient confirms receipt.', done: mine.some((d) => ['delivered', 'recipient_confirmed', 'completed'].includes(d.status)) },
+  ];
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-900 via-emerald-900 to-teal-900 py-8 px-2">
-      <div className="max-w-3xl mx-auto">
-        {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-extrabold text-white mb-1">Volunteer Dashboard</h1>
-            <p className="text-emerald-100 text-base">Welcome, {volunteer.first_name}!</p>
-          </div>
-          <div className="mt-4 md:mt-0 flex flex-wrap gap-2">
-            <button
-              className="bg-green-800 hover:bg-emerald-700 text-white px-6 py-2 rounded-lg font-semibold shadow-md transition-all duration-200"
-              onClick={() => setEditMode((m) => !m)}
-            >
-              {editMode ? 'Cancel' : 'Edit Profile'}
-            </button>
-            <button
-              className="bg-emerald-700 hover:bg-green-800 text-white px-6 py-2 rounded-lg font-semibold shadow-md transition-all duration-200"
-              onClick={() => window.location.href = '/'}
-            >
-              Logout
-            </button>
-            <button
-              className="bg-yellow-700 hover:bg-yellow-800 text-white px-6 py-2 rounded-lg font-semibold shadow-md transition-all duration-200"
-              onClick={handleSubmit}
-              disabled={loading}
-            >
-              {loading ? 'Updating...' : 'Update Profile'}
-            </button>
-          </div>
-        </div>
+    <DashboardShell
+      roleLabel={`${currentUser?.username || ''} · volunteer`}
+      extraNav={
+        <button type="button" className="rounded-lg bg-emerald-800 px-3 py-2 text-sm font-semibold text-white" onClick={async () => { await signOut(); window.location.href = '/'; }}>
+          Log out
+        </button>
+      }
+    >
+      <h1 className="font-display text-3xl font-semibold text-emerald-950">Volunteer assignments</h1>
+      <p className="mt-2 max-w-2xl text-sm text-emerald-800/80">
+        Choose a task in your area. Sensitive handover notes appear only after you accept.
+      </p>
 
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-3 mb-8">
-          <div className="rounded-2xl overflow-hidden bg-white shadow border border-emerald-100">
-            <div className="h-28 bg-cover bg-center" style={{ backgroundImage: "url('/images/hero.webp')" }} />
-            <div className="p-3">
-              <p className="text-xs uppercase font-bold tracking-wide text-emerald-700">Mission View</p>
-              <p className="text-xs text-emerald-900 mt-1">Matches the home hero to reinforce the same mission while volunteering.</p>
-            </div>
-          </div>
-          <div className="rounded-2xl overflow-hidden bg-white shadow border border-emerald-100">
-            <img src={team} alt="Volunteer team" className="h-28 w-full object-contain bg-emerald-50" />
-            <div className="p-3">
-              <p className="text-xs uppercase font-bold tracking-wide text-emerald-700">Team Coordination</p>
-              <p className="text-xs text-emerald-900 mt-1">Highlights collaborative volunteer operations.</p>
-            </div>
-          </div>
-          <div className="rounded-2xl overflow-hidden bg-white shadow border border-emerald-100">
-            <img src={family} alt="Community beneficiaries" className="h-28 w-full object-contain bg-emerald-50" />
-            <div className="p-3">
-              <p className="text-xs uppercase font-bold tracking-wide text-emerald-700">Community Served</p>
-              <p className="text-xs text-emerald-900 mt-1">Keeps beneficiary impact visible during event tracking.</p>
-            </div>
-          </div>
-        </div>
+      <div className="mt-6">
+        <OnboardingChecklist role="volunteer" items={items} />
+      </div>
 
-        {/* Motivational Quote */}
-        <div className="bg-emerald-100 border-l-4 border-emerald-600 text-emerald-900 p-4 rounded-xl shadow mb-8 text-center">
-          <span className="italic font-semibold">“We make a living by what we get, but we make a life by what we give.”</span>
-          <span className="block mt-2 text-emerald-700">— Winston Churchill</span>
-        </div>
+      {error && <p className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">{error}</p>}
+      {notice && <p className="mt-4 rounded-xl border border-emerald-200 bg-white px-4 py-3 text-sm text-emerald-800">{notice}</p>}
 
-        {/* Profile Card or Edit Form */}
-        <div className="bg-white rounded-2xl shadow p-6 mb-8">
-          {editMode ? (
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <section className="mt-8 rounded-2xl border border-emerald-100 bg-white p-6">
+        <h2 className="font-display text-xl font-semibold text-emerald-950">Eligible tasks</h2>
+        {eligible.length === 0 ? (
+          <p className="py-6 text-sm text-emerald-800/70">No unmatched handovers right now.</p>
+        ) : (
+          <ul className="mt-4 space-y-3">
+            {eligible.map((task) => (
+              <li key={task.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-emerald-50 p-4">
                 <div>
-                  <label className="block text-green-900 font-semibold mb-1">First Name</label>
-                  <input name="first_name" value={form.first_name} onChange={handleChange} className="w-full border rounded p-2" required />
+                  <p className="font-semibold text-emerald-950">{task.food_item || task.title}</p>
+                  <p className="text-sm text-emerald-800/75">
+                    {task.quantity} {task.unit} · {task.handover?.approx_location || 'Service area'} · {task.status}
+                  </p>
                 </div>
-                <div>
-                  <label className="block text-green-900 font-semibold mb-1">Last Name</label>
-                  <input name="last_name" value={form.last_name} onChange={handleChange} className="w-full border rounded p-2" required />
-                </div>
-                <div>
-                  <label className="block text-green-900 font-semibold mb-1">Email</label>
-                  <input name="email" value={form.email} onChange={handleChange} className="w-full border rounded p-2" required type="email" />
-                </div>
-                <div>
-                  <label className="block text-green-900 font-semibold mb-1">ID Number</label>
-                  <input name="id_no" value={form.id_no} onChange={handleChange} className="w-full border rounded p-2" required />
-                </div>
-                <div>
-                  <label className="block text-green-900 font-semibold mb-1">Phone Number</label>
-                  <input name="phone_number" value={form.phone_number} onChange={handleChange} className="w-full border rounded p-2" required />
-                </div>
-                <div>
-                  <label className="block text-green-900 font-semibold mb-1">Gender</label>
-                  <select name="gender" value={form.gender} onChange={handleChange} className="w-full border rounded p-2">
-                    <option value="Female">Female</option>
-                    <option value="Male">Male</option>
-                    <option value="Other">Other</option>
-                  </select>
-                </div>
-                <div className="md:col-span-2">
-                  <label className="block text-green-900 font-semibold mb-1">Address</label>
-                  <input name="address" value={form.address} onChange={handleChange} className="w-full border rounded p-2" required />
-                </div>
-              </div>
-              <div className="flex items-center space-x-4 mt-4">
-                <button type="submit" className="bg-green-800 hover:bg-emerald-700 text-white px-6 py-2 rounded-lg font-semibold shadow-md transition-all duration-200" disabled={loading}>
-                  {loading ? 'Saving...' : 'Save Changes'}
+                <button
+                  type="button"
+                  disabled={busy === task.id}
+                  className="rounded-lg bg-orange-500 px-4 py-2 text-sm font-semibold text-white hover:bg-orange-600 disabled:opacity-50"
+                  onClick={() => accept(task.id)}
+                >
+                  Accept
                 </button>
-                {success && <span className="text-green-700 font-semibold">{success}</span>}
-                {error && <span className="text-red-600 font-semibold">{error}</span>}
-              </div>
-            </form>
-          ) : (
-            <div className="flex flex-col md:flex-row md:items-center md:space-x-8">
-              <div className="flex-shrink-0 flex items-center justify-center mb-4 md:mb-0">
-                <span role="img" aria-label="volunteer" className="text-6xl" style={{ color: '#26a69a' }}>🤝</span>
-              </div>
-              <div>
-                <div className="text-xl font-bold text-green-900 mb-1">{volunteer.first_name} {volunteer.last_name}</div>
-                <div className="text-emerald-900 mb-1">{volunteer.email}</div>
-                <div className="text-emerald-900 mb-1">{volunteer.phone_number}</div>
-                <div className="text-emerald-900 mb-1">{volunteer.address}</div>
-                <div className="text-emerald-900 mb-1">{volunteer.gender}</div>
-                <div className="text-emerald-900 mb-1">ID: {volunteer.id_no}</div>
-                <div className="text-emerald-700 font-semibold">{volunteer.status}</div>
-              </div>
-            </div>
-          )}
-        </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
 
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-          <div className="bg-white rounded-xl shadow p-6 flex flex-col items-center border border-emerald-100">
-            <span className="text-3xl font-bold text-green-900">{volunteer.events_attended.length}</span>
-            <span className="text-emerald-700 mt-2">Events Attended</span>
-          </div>
-          <div className="bg-white rounded-xl shadow p-6 flex flex-col items-center border border-emerald-100">
-            <span className="text-3xl font-bold text-green-900">{volunteer.status}</span>
-            <span className="text-emerald-700 mt-2">Status</span>
-          </div>
-        </div>
-
-        {/* Events Attended Section */}
-        <div className="bg-white rounded-2xl shadow p-6">
-          <h3 className="text-xl font-bold text-green-900 mb-4">Events Attended</h3>
-          <ul className="space-y-3">
-            {volunteer.events_attended.map((event, idx) => (
-              <li key={idx} className="flex flex-col md:flex-row md:items-center md:justify-between border-b border-emerald-50 pb-2 mb-2 last:border-b-0 last:mb-0">
-                <div>
-                  <span className="font-semibold text-green-900">{event.name}</span>
-                  <span className="block text-emerald-700 text-sm">{event.date}</span>
+      <section className="mt-6 rounded-2xl border border-emerald-100 bg-white p-6">
+        <h2 className="font-display text-xl font-semibold text-emerald-950">Active assignments</h2>
+        <label className="mt-3 block text-sm text-emerald-900">
+          Evidence note (optional)
+          <input
+            className="mt-1 w-full rounded-lg border border-emerald-200 px-3 py-2 text-sm"
+            value={evidence}
+            onChange={(e) => setEvidence(e.target.value)}
+            placeholder="Pickup condition, delay, or safety note"
+          />
+        </label>
+        {mine.length === 0 ? (
+          <p className="py-6 text-sm text-emerald-800/70">Accept a task to see exact handover details.</p>
+        ) : (
+          <ul className="mt-4 space-y-4">
+            {mine.map((task) => (
+              <li key={task.id} className="rounded-xl border border-emerald-50 p-4">
+                <p className="font-semibold text-emerald-950">{task.food_item || task.title}</p>
+                <p className="text-sm text-emerald-800/80">Status: {task.status}</p>
+                <p className="mt-2 text-sm text-emerald-900">
+                  Window: {task.handover?.collection_window || '—'} · Notes: {task.handover?.handling_notes || '—'}
+                </p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {['collected', 'in_transit', 'delivered', 'failed'].map((st) => (
+                    <button
+                      key={st}
+                      type="button"
+                      disabled={busy === task.id}
+                      className="rounded-md bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-900 hover:bg-emerald-100"
+                      onClick={() => progress(task.id, st)}
+                    >
+                      {st.replaceAll('_', ' ')}
+                    </button>
+                  ))}
                 </div>
               </li>
             ))}
           </ul>
-        </div>
-      </div>
-    </div>
+        )}
+      </section>
+    </DashboardShell>
   );
 }
-
-export default VolunteerDashboard;

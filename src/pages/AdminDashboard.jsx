@@ -212,6 +212,8 @@ export default function AdminDashboard() {
           reason: REASON_STATUSES.has(target.status) ? reason : reason || null,
         }),
       );
+    } else if (type === 'donation-status') {
+      runAction(() => api.post(`/donations/${target.id}/transition`, { status: target.status, reason }));
     }
   };
 
@@ -473,6 +475,7 @@ export default function AdminDashboard() {
                             <th className="px-2 py-2">Status</th>
                             <th className="px-2 py-2">Location</th>
                             <th className="px-2 py-2">Updated</th>
+                            <th className="px-2 py-2">Moderate</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -490,6 +493,38 @@ export default function AdminDashboard() {
                               </td>
                               <td className="px-2 py-3 text-emerald-800/80">{d.approx_location || '—'}</td>
                               <td className="px-2 py-3 text-xs text-emerald-700/70">{formatWhen(d.updated_at || d.created_at)}</td>
+                              <td className="px-2 py-3">
+                                <select
+                                  className="rounded-md border border-emerald-200 px-2 py-1 text-xs"
+                                  defaultValue=""
+                                  disabled={busyId === d.id}
+                                  onChange={(e) => {
+                                    const status = e.target.value;
+                                    if (!status) return;
+                                    const needsReason = ['rejected', 'cancelled', 'recalled', 'disputed'].includes(status);
+                                    if (needsReason) {
+                                      setPendingAction({
+                                        type: 'donation-status',
+                                        target: { id: d.id, status },
+                                        title: `Set donation to ${status}`,
+                                      });
+                                    } else {
+                                      setBusyId(d.id);
+                                      runAction(() =>
+                                        api.post(`/donations/${d.id}/transition`, { status, reason: 'Admin moderation' }),
+                                      );
+                                    }
+                                    e.target.value = '';
+                                  }}
+                                >
+                                  <option value="">Advance…</option>
+                                  {['under_review', 'available', 'matched', 'pickup_scheduled', 'rejected', 'cancelled'].map((s) => (
+                                    <option key={s} value={s}>
+                                      {s}
+                                    </option>
+                                  ))}
+                                </select>
+                              </td>
                             </tr>
                           ))}
                         </tbody>

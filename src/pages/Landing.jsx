@@ -10,6 +10,7 @@ import ClosingSection from '../components/landing/ClosingSection.jsx';
 import StickyMobileCta from '../components/landing/StickyMobileCta.jsx';
 import { MEDIA } from '../constants/media';
 import api from '../lib/api';
+import { track, EVENTS } from '../lib/analytics';
 
 const ROLES = [
   {
@@ -43,6 +44,7 @@ export default function Landing({ isOpen, popupType, togglePopup }) {
 
   useEffect(() => {
     window.scrollTo(0, 0);
+    track(EVENTS.choose_view_landing);
     api
       .get('/impact/summary')
       .then((res) => setImpact(res.data))

@@ -48,30 +48,31 @@ Living plan. Update as phases complete.
 - [x] Rules-based matching + concurrency-safe claim
 - [x] Impact on recipient confirmation
 - [x] Admin audit reasons
-- [~] Richer volunteer fulfilment UI evidence flows
+- [x] Richer volunteer fulfilment UI evidence flows
 
 ## Phase 4 — Journeys
 
 - [x] Landing: mission, privacy, role CTAs (honest empty impact)
 - [x] Protected role dashboards
-- [~] Progressive onboarding checklist polish
-- [~] Notification adapters (stubs)
+- [x] Progressive onboarding checklist polish
+- [x] Notification adapters (in-app + no-op email/SMS)
 
 ## Phase 5 — Visibility & growth
 
 - [x] Verified impact API + methodology notes
 - [x] Privacy/consent foundations + export/delete
 - [x] Kenya compliance checklist (non-claiming)
-- [~] Full event taxonomy instrumentation across all pages
+- [x] Choose/Use event taxonomy (session store; no third-party tracker)
 
 ## Quality
 
-- [x] Backend unit + integration tests (lifecycle, admin block, double-claim)
+- [x] Backend unit + integration tests (lifecycle, admin block, double-claim, volunteer assignment)
 - [x] Frontend vitest smoke
-- [x] GitHub Actions CI workflow
+- [x] GitHub Actions CI workflow (frontend blocking; backend sibling repo + submodule best-effort)
 - [x] Ops / security / API / architecture docs
 - [x] README rewrite
-- [~] Playwright e2e (script placeholder; full suite deferred)
+- [x] Playwright specs (landing + optional API journey when `E2E_API=1`)
+- [x] Shop browse copy reframed away from checkout
 
 ## Explicitly deferred / not appropriate
 
