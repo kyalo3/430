@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import mark from '../../assets/images/logo.svg';
+import mark from '../assets/images/logo.svg';
 
 const SIZES = {
   sm: { mark: 'h-8 w-8', text: 'text-base' },

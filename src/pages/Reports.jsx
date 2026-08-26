@@ -1,189 +1,187 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import { useCallback, useContext, useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { AuthContext } from '../context/AuthContext';
+import api from '../lib/api';
+import BrandLogo from '../components/BrandLogo';
 
-function Reports() {
-  const [reportData, setReportData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-
-  const fetchReport = async () => {
-    setLoading(true);
-    setError('');
-    try {
-      // Example: fetch summary stats, donations, users, etc.
-      const [users, donations, reviews] = await Promise.all([
-        axios.get('http://127.0.0.1:8000/users/').catch(() => ({ data: null })),
-        axios.get('http://127.0.0.1:8000/donations/').catch(() => ({ data: null })),
-        axios.get('http://127.0.0.1:8000/reviews/').catch(() => ({ data: null }))
-      ]);
-      // Sample fallback data
-      const sampleUsers = [
-        { id: '1', username: 'admin', email: 'admin@example.com' },
-        { id: '2', username: 'alice', email: 'alice@example.com' },
-        { id: '3', username: 'bob', email: 'bob@example.com' },
-      ];
-      const sampleDonations = [
-        { id: 'd1', donor: 'alice', recipient: 'charity1', amount: 10, item: 'Rice', date: '2025-11-20' },
-        { id: 'd2', donor: 'bob', recipient: 'charity2', amount: 5, item: 'Beans', date: '2025-11-19' },
-        { id: 'd3', donor: 'alice', recipient: 'charity3', amount: 8, item: 'Maize', date: '2025-11-18' },
-      ];
-      const sampleReviews = [
-        { id: 'r1', user: 'alice', comment: 'Great donation process!', date: '2025-11-20' },
-        { id: 'r2', user: 'bob', comment: 'Quick support response.', date: '2025-11-19' },
-        { id: 'r3', user: 'carol', comment: 'Would love more variety.', date: '2025-11-18' },
-      ];
-      setReportData({
-        users: users.data && users.data.length ? users.data : sampleUsers,
-        donations: donations.data && donations.data.length ? donations.data : sampleDonations,
-        reviews: reviews.data && reviews.data.length ? reviews.data : sampleReviews,
+function toRows(data) {
+  if (!Array.isArray(data)) return [];
+  return data.map((row) => {
+    if (row && typeof row === 'object') {
+      const copy = { ...row };
+      delete copy.password;
+      Object.keys(copy).forEach((key) => {
+        const val = copy[key];
+        if (val && typeof val === 'object') copy[key] = JSON.stringify(val);
       });
-    } catch (err) {
-      setError('Failed to load reports');
-    } finally {
-      setLoading(false);
+      return copy;
     }
-  };
+    return { value: String(row) };
+  });
+}
 
-  useEffect(() => {
-    fetchReport();
-  }, []);
+function downloadCSV(data, filename) {
+  const rows = toRows(data);
+  if (!rows.length) return;
+  const keys = Object.keys(rows[0]);
+  const csv = [keys.join(','), ...rows.map((row) => keys.map((k) => JSON.stringify(row[k] ?? '')).join(','))].join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
 
-  // Download CSV helper
-  const downloadCSV = (data, filename) => {
-    const csvRows = [
-      Object.keys(data[0]).join(','),
-      ...data.map(row => Object.values(row).join(','))
-    ];
-    const csvContent = csvRows.join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-
+function ReportTable({ rows, empty }) {
+  if (!rows.length) return <p className="py-6 text-center text-sm text-emerald-800/70">{empty}</p>;
+  const keys = Object.keys(rows[0]);
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-emerald-900 to-green-900 py-8 px-2">
-      <div className="max-w-4xl mx-auto bg-white rounded-xl shadow p-8">
-        <h1 className="text-3xl font-extrabold text-emerald-900 mb-6 text-center">System Reports</h1>
-        {error && <div className="bg-red-100 text-red-800 p-4 rounded-lg shadow mb-8">{error}</div>}
-        <div className="flex justify-end mb-4">
-          <button className="bg-emerald-700 hover:bg-emerald-800 text-white px-4 py-1 rounded" onClick={fetchReport} disabled={loading}>
-            {loading ? 'Refreshing...' : 'Refresh'}
-          </button>
-        </div>
-        {loading ? (
-          <div className="flex justify-center items-center h-32">
-            <div className="animate-spin rounded-full h-10 w-10 border-t-4 border-green-400 border-opacity-50"></div>
-            <span className="text-green-900 text-lg font-semibold ml-4">Loading...</span>
-          </div>
-        ) : reportData ? (
-          <>
-            <div className="mb-6">
-              <h2 className="text-xl font-bold text-emerald-800 mb-2">Summary</h2>
-              <ul className="list-disc pl-6 text-gray-700">
-                <li>Total Users: {reportData.users.length}</li>
-                <li>Total Donations: {reportData.donations.length}</li>
-                <li>Total Reviews: {reportData.reviews.length}</li>
-              </ul>
-            </div>
-            <div className="mb-6">
-              <h2 className="text-lg font-bold text-green-800 mb-2">Donations Report</h2>
-              {reportData.donations && reportData.donations.length > 0 ? (
-                <>
-                  <button className="bg-green-700 hover:bg-green-800 text-white px-4 py-1 rounded mb-2" onClick={() => downloadCSV(reportData.donations, 'donations_report.csv')}>Download CSV</button>
-                  <div className="overflow-x-auto max-h-64">
-                    <table className="min-w-full text-xs">
-                      <thead>
-                        <tr>
-                          {Object.keys(reportData.donations[0] || {}).map((key) => (
-                            <th key={key} className="px-2 py-1 border-b text-left">{key}</th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {reportData.donations.slice(0, 10).map((row, idx) => (
-                          <tr key={idx} className="border-b last:border-b-0">
-                            {Object.values(row).map((val, i) => (
-                              <td key={i} className="px-2 py-1">{String(val)}</td>
-                            ))}
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </>
-              ) : (
-                <div className="text-gray-400 italic">No donations data available.</div>
-              )}
-            </div>
-            <div className="mb-6">
-              <h2 className="text-lg font-bold text-emerald-800 mb-2">Users Report</h2>
-              {reportData.users && reportData.users.length > 0 ? (
-                <>
-                  <button className="bg-emerald-700 hover:bg-emerald-800 text-white px-4 py-1 rounded mb-2" onClick={() => downloadCSV(reportData.users, 'users_report.csv')}>Download CSV</button>
-                  <div className="overflow-x-auto max-h-64">
-                    <table className="min-w-full text-xs">
-                      <thead>
-                        <tr>
-                          {Object.keys(reportData.users[0] || {}).map((key) => (
-                            <th key={key} className="px-2 py-1 border-b text-left">{key}</th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {reportData.users.slice(0, 10).map((row, idx) => (
-                          <tr key={idx} className="border-b last:border-b-0">
-                            {Object.values(row).map((val, i) => (
-                              <td key={i} className="px-2 py-1">{String(val)}</td>
-                            ))}
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </>
-              ) : (
-                <div className="text-gray-400 italic">No users data available.</div>
-              )}
-            </div>
-            <div className="mb-6">
-              <h2 className="text-lg font-bold text-blue-800 mb-2">Reviews Report</h2>
-              {reportData.reviews && reportData.reviews.length > 0 ? (
-                <>
-                  <button className="bg-blue-700 hover:bg-blue-800 text-white px-4 py-1 rounded mb-2" onClick={() => downloadCSV(reportData.reviews, 'reviews_report.csv')}>Download CSV</button>
-                  <div className="overflow-x-auto max-h-64">
-                    <table className="min-w-full text-xs">
-                      <thead>
-                        <tr>
-                          {Object.keys(reportData.reviews[0] || {}).map((key) => (
-                            <th key={key} className="px-2 py-1 border-b text-left">{key}</th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {reportData.reviews.slice(0, 10).map((row, idx) => (
-                          <tr key={idx} className="border-b last:border-b-0">
-                            {Object.values(row).map((val, i) => (
-                              <td key={i} className="px-2 py-1">{String(val)}</td>
-                            ))}
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </>
-              ) : (
-                <div className="text-gray-400 italic">No reviews data available.</div>
-              )}
-            </div>
-          </>
-        ) : null}
-      </div>
+    <div className="overflow-x-auto">
+      <table className="min-w-full text-xs">
+        <thead>
+          <tr>
+            {keys.map((key) => (
+              <th key={key} className="px-2 py-2 text-left font-semibold uppercase tracking-wide text-emerald-700">
+                {key}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.slice(0, 25).map((row, idx) => (
+            <tr key={idx} className="border-t border-emerald-50">
+              {keys.map((key) => (
+                <td key={key} className="max-w-xs truncate px-2 py-2 text-emerald-950">
+                  {String(row[key] ?? '')}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }
 
-export default Reports;
+export default function Reports() {
+  const { signOut } = useContext(AuthContext);
+  const navigate = useNavigate();
+  const [reportData, setReportData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  const fetchReport = useCallback(async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const [users, donations, reviews, impact] = await Promise.all([
+        api.get('/users/'),
+        api.get('/admin/donations'),
+        api.get('/reviews/').catch(() => ({ data: [] })),
+        api.get('/impact/admin').catch(() => ({ data: { count: 0, items: [] } })),
+      ]);
+      setReportData({
+        users: toRows(users.data),
+        donations: toRows(donations.data),
+        reviews: toRows(reviews.data),
+        impactCount: impact.data?.count || 0,
+      });
+    } catch (err) {
+      setError(err.message || 'Failed to load reports');
+      setReportData(null);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchReport();
+  }, [fetchReport]);
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate('/');
+  };
+
+  return (
+    <div className="min-h-screen bg-[#eef5f0]">
+      <header className="sticky top-0 z-40 border-b border-emerald-100 bg-white/95 backdrop-blur">
+        <div className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
+          <BrandLogo size="sm" />
+          <div className="flex items-center gap-2">
+            <Link to="/dashboard/admin" className="rounded-lg px-3 py-2 text-sm font-semibold text-emerald-900 hover:bg-emerald-50">
+              Admin console
+            </Link>
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="rounded-lg bg-emerald-800 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-900"
+            >
+              Log out
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
+        <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <p className="text-sm font-bold uppercase tracking-[0.14em] text-orange-600">Reports</p>
+            <h1 className="font-display text-3xl font-semibold text-emerald-950">Operational reports</h1>
+            <p className="mt-2 text-sm text-emerald-800/80">Live extracts. Empty tables mean no records yet — not sample data.</p>
+          </div>
+          <button
+            type="button"
+            className="rounded-lg border border-emerald-200 bg-white px-4 py-2 text-sm font-semibold text-emerald-900 hover:bg-emerald-50"
+            onClick={fetchReport}
+            disabled={loading}
+          >
+            {loading ? 'Refreshing…' : 'Refresh'}
+          </button>
+        </div>
+
+        {error && <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">{error}</div>}
+
+        {loading && !reportData ? (
+          <div className="rounded-2xl border border-emerald-100 bg-white p-12 text-center text-emerald-800">Loading reports…</div>
+        ) : reportData ? (
+          <div className="space-y-6">
+            <section className="rounded-2xl border border-emerald-100 bg-white p-6">
+              <h2 className="font-display text-xl font-semibold text-emerald-950">Summary</h2>
+              <ul className="mt-3 grid gap-2 text-sm text-emerald-900 sm:grid-cols-2">
+                <li>Users: {reportData.users.length}</li>
+                <li>Donations: {reportData.donations.length}</li>
+                <li>Reviews: {reportData.reviews.length}</li>
+                <li>Verified impact records: {reportData.impactCount}</li>
+              </ul>
+            </section>
+
+            {[
+              ['Donations', reportData.donations, 'donations_report.csv', 'No donations yet.'],
+              ['Users', reportData.users, 'users_report.csv', 'No users yet.'],
+              ['Reviews', reportData.reviews, 'reviews_report.csv', 'No reviews yet.'],
+            ].map(([title, rows, file, empty]) => (
+              <section key={title} className="rounded-2xl border border-emerald-100 bg-white p-6">
+                <div className="mb-3 flex items-center justify-between gap-2">
+                  <h2 className="font-display text-xl font-semibold text-emerald-950">{title}</h2>
+                  {rows.length > 0 && (
+                    <button
+                      type="button"
+                      className="rounded-lg bg-emerald-800 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-900"
+                      onClick={() => downloadCSV(rows, file)}
+                    >
+                      Download CSV
+                    </button>
+                  )}
+                </div>
+                <ReportTable rows={rows} empty={empty} />
+              </section>
+            ))}
+          </div>
+        ) : null}
+      </main>
+    </div>
+  );
+}

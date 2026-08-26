@@ -14,7 +14,12 @@ export default defineConfig({
         target: 'http://127.0.0.1:8000',
         changeOrigin: true,
         secure: false,
-        rewrite: (path) => path.replace(/^\/api/, '') || '/',
+        rewrite: (path) => {
+          const rest = path.replace(/^\/api/, '') || '/';
+          // Platform routes are versioned-only on some running servers
+          if (rest.startsWith('/platform')) return `/api/v1${rest}`;
+          return rest;
+        },
       },
     },
   },
