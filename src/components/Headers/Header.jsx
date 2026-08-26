@@ -1,5 +1,5 @@
 import DropdownButton from '../Dropdowns/DropdownButton';
-import logo from '../../assets/images/logo.png'
+import BrandLogo from '../BrandLogo';
 
 const Header = () => {
   return (
@@ -8,9 +8,7 @@ const Header = () => {
         <div className="flex justify-between h-full">
           <div className="flex items-center">
             <div className="flex-shrink-0 mr-16">
-              <a href="/" >
-                <img className="w-32 h-auto" src={logo} alt="Logo" />
-              </a>
+              <BrandLogo size="lg" />
             </div>
             <div className="hidden sm:-my-px sm:ml-6 sm:flex sm:space-x-8">
               <a href="/" className="border-primary text-fontWhiteBg inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Home</a>

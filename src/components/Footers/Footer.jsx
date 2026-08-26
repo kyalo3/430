@@ -1,160 +1,70 @@
+import { Link } from 'react-router-dom';
+import BrandLogo from '../BrandLogo';
+
 export default function Footer() {
   return (
-    <>
-      <footer className="relative bg-slate-200 pt-8 pb-6">
-        <div
-          className="bottom-auto top-0 left-0 right-0 w-full absolute pointer-events-none overflow-hidden -mt-20 h-20"
-          style={{ transform: "translateZ(0)" }}
-        >
-          <svg
-            className="absolute bottom-0 overflow-hidden"
-            xmlns="http://www.w3.org/2000/svg"
-            preserveAspectRatio="none"
-            version="1.1"
-            viewBox="0 0 2560 100"
-            x="0"
-            y="0"
-          >
-            <polygon
-              className="text-slate-200 fill-current"
-              points="2560 0 2560 100 0 100"
-            ></polygon>
-          </svg>
-        </div>
-        <div className="container mx-auto px-4">
-          <div className="flex flex-wrap text-center lg:text-left">
-            <div className="w-full lg:w-6/12 px-4">
-              <h4 className="text-3xl font-semibold">Let&apos;s keep in touch!</h4>
-              <h5 className="text-lg mt-0 mb-2 text-slate-600">
-                Find us on any of these platforms, we respond 1-2 business days.
-              </h5>
-              <div className="mt-6 lg:mb-0 mb-6">
-                <button
-                  className="bg-white text-lightBlue-400 shadow-lg font-normal h-10 w-10 items-center justify-center align-center rounded-full outline-none focus:outline-none mr-2"
-                  type="button"
-                >
-                  <i className="fab fa-twitter"></i>
-                </button>
-                <button
-                  className="bg-white text-lightBlue-600 shadow-lg font-normal h-10 w-10 items-center justify-center align-center rounded-full outline-none focus:outline-none mr-2"
-                  type="button"
-                >
-                  <i className="fab fa-facebook-square"></i>
-                </button>
-                {/* <button
-                  className="bg-white text-pink-400 shadow-lg font-normal h-10 w-10 items-center justify-center align-center rounded-full outline-none focus:outline-none mr-2"
-                  type="button"
-                >
-                  <i className="fab fa-dribbble"></i>
-                </button> */}
-                <button
-                  className="bg-white text-slate-800 shadow-lg font-normal h-10 w-10 items-center justify-center align-center rounded-full outline-none focus:outline-none mr-2"
-                  type="button"
-                >
-                  <i className="fab fa-instagram"></i>
-                </button>
-              </div>
-            </div>
-            <div className="w-full lg:w-6/12 px-4">
-              <div className="flex flex-wrap items-top mb-6">
-                <div className="w-full lg:w-4/12 px-4 ml-auto">
-                  <span className="block uppercase text-slate-500 text-sm font-semibold mb-2">
-                    Useful Links
-                  </span>
-                  <ul className="list-unstyled">
-                    <li>
-                      <a
-                        className="text-slate-600 hover:text-slate-800 font-semibold block pb-2 text-sm"
-                        href="https://www.creative-tim.com/presentation?ref=nnjs-footer"
-                      >
-                        About Us
-                      </a>
-                    </li>
-                    <li>
-                      <a
-                        className="text-slate-600 hover:text-slate-800 font-semibold block pb-2 text-sm"
-                        href="https://blog.creative-tim.com?ref=nnjs-footer"
-                      >
-                        Blog
-                      </a>
-                    </li>
-                    <li>
-                      <a
-                        className="text-slate-600 hover:text-slate-800 font-semibold block pb-2 text-sm"
-                        href="https://www.instagram.com/creativetimofficial?ref=nnjs-footer"
-                      >
-                        instagram
-                      </a>
-                    </li>
-                    <li>
-                      <a
-                        className="text-slate-600 hover:text-slate-800 font-semibold block pb-2 text-sm"
-                        href="https://www.creative-tim.com/bootstrap-themes/free?ref=nnjs-footer"
-                      >
-                        Free Products
-                      </a>
-                    </li>
-                  </ul>
-                </div>
-                <div className="w-full lg:w-4/12 px-4">
-                  <span className="block uppercase text-slate-500 text-sm font-semibold mb-2">
-                    Other Resources
-                  </span>
-                  <ul className="list-unstyled">
-                    <li>
-                      <a
-                        className="text-slate-600 hover:text-slate-800 font-semibold block pb-2 text-sm"
-                        href="https://instagram.com/creativetimofficial/notus-nextjs/blob/main/LICENSE.md?ref=nnjs-footer"
-                      >
-                        MIT License
-                      </a>
-                    </li>
-                    <li>
-                      <a
-                        className="text-slate-600 hover:text-slate-800 font-semibold block pb-2 text-sm"
-                        href="https://creative-tim.com/terms?ref=nnjs-footer"
-                      >
-                        Terms & Conditions
-                      </a>
-                    </li>
-                    <li>
-                      <a
-                        className="text-slate-600 hover:text-slate-800 font-semibold block pb-2 text-sm"
-                        href="https://creative-tim.com/privacy?ref=nnjs-footer"
-                      >
-                        Privacy Policy
-                      </a>
-                    </li>
-                    <li>
-                      <a
-                        className="text-slate-600 hover:text-slate-800 font-semibold block pb-2 text-sm"
-                        href="https://creative-tim.com/contact-us?ref=nnjs-footer"
-                      >
-                        Contact Us
-                      </a>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </div>
+    <footer className="relative bg-[#071a14] text-emerald-50 border-t border-white/5">
+      <div className="container mx-auto px-6 sm:px-8 py-12">
+        <div className="grid gap-10 lg:grid-cols-[1.2fr_1fr_1fr] items-start">
+          <div>
+            <BrandLogo onDark size="lg" />
+            <p className="mt-4 text-sm text-emerald-100/65 max-w-sm leading-relaxed">
+              Trusted resource redistribution with verification, matching, safe handovers, and honest impact
+              measurement.
+            </p>
           </div>
-          <hr className="my-6 border-slate-300" />
-          <div className="flex flex-wrap items-center md:justify-between justify-center">
-            <div className="w-full md:w-4/12 px-4 mx-auto text-center">
-              <div className="text-sm text-slate-500 font-semibold py-1">
-                Copyright © {new Date().getFullYear()} Sustainashare by{" "}
-                <a
-                  href="https://www.creative-tim.com?ref=nnjs-footer"
-                  className="text-slate-500 hover:text-slate-800"
-                >
-                  Techtonic
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.14em] text-orange-300/90 mb-4">Explore</p>
+            <ul className="space-y-2.5 text-sm">
+              <li>
+                <a className="text-emerald-50/90 hover:text-orange-300" href="/#how-it-works">
+                  How it works
                 </a>
-                .
-              </div>
-            </div>
+              </li>
+              <li>
+                <a className="text-emerald-50/90 hover:text-orange-300" href="/#journeys">
+                  Journeys
+                </a>
+              </li>
+              <li>
+                <Link className="text-emerald-50/90 hover:text-orange-300" to="/faqs">
+                  FAQs
+                </Link>
+              </li>
+              <li>
+                <Link className="text-emerald-50/90 hover:text-orange-300" to="/shop">
+                  Browse surplus
+                </Link>
+              </li>
+            </ul>
+          </div>
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.14em] text-orange-300/90 mb-4">Trust</p>
+            <ul className="space-y-2.5 text-sm">
+              <li>
+                <a className="text-emerald-50/90 hover:text-orange-300" href="/#voices">
+                  Journey voices
+                </a>
+              </li>
+              <li>
+                <a className="text-emerald-50/90 hover:text-orange-300" href="/#contact">
+                  Contact
+                </a>
+              </li>
+              <li>
+                <span className="text-emerald-200/50">Privacy-first by design</span>
+              </li>
+            </ul>
           </div>
         </div>
-      </footer>
-    </>
+
+        <div className="mt-10 flex flex-col gap-3 border-t border-white/10 pt-6 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-sm text-emerald-200/55">
+            © {new Date().getFullYear()} Sustainashare. Verified impact only — no invented counters.
+          </p>
+          <p className="text-xs text-emerald-200/40">Built for communities that refuse to waste what still can nourish.</p>
+        </div>
+      </div>
+    </footer>
   );
 }

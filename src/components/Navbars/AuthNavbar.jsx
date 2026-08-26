@@ -1,89 +1,106 @@
-import AuthDropDown from "../Dropdowns/AuthDropdown";
-import { useState } from "react";
-import logo from '../../assets/images/logo.png'
+import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import BrandLogo from '../BrandLogo';
 
+const NAV_LINKS = [
+  { href: '/#how-it-works', label: 'How it works' },
+  { href: '/#journeys', label: 'Journeys' },
+  { href: '/#voices', label: 'Voices' },
+  { href: '/faqs', label: 'FAQs', isRoute: true },
+  { href: '/shop', label: 'Browse surplus', isRoute: true },
+];
 
-export default function Navbar({isOpen, popupType, togglePopup}) {
+export default function Navbar({ togglePopup }) {
   const [navbarOpen, setNavbarOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 12);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  const closeMenu = () => setNavbarOpen(false);
+
+  const openAuth = (type) => {
+    closeMenu();
+    togglePopup(type);
+  };
+
   return (
-    <>
-      <nav className="sticky bg-slate-100 top-0 absolute z-50 w-full flex flex-wrap items-center justify-between px-2 py-3 navbar-expand-lg">
-        <div className="container h-16 px-4 mx-auto flex flex-wrap items-center content-center justify-between my-auto">
-          <div className="w-full relative flex justify-between lg:w-auto lg:static lg:block lg:justify-start">
-            <a href="/"
-                className="text-emerald-800 text-sm font-bold leading-relaxed inline-block mr-4 py-2 whitespace-nowrap uppercase"
-              >
-                <img className="w-32 h-auto" src={logo} alt="Logo" />
-            </a>
-            <button
-              className="cursor-pointer text-xl leading-none px-3 py-1 border border-solid border-transparent rounded bg-emerald-800 block lg:hidden outline-none focus:outline-none"
-              type="button"
-              onClick={() => setNavbarOpen(!navbarOpen)}
-            >
-              <i className="text-emerald-800 fas fa-bars"></i>
-            </button>
-          </div>
-          <div
-            className={
-              "lg:flex flex-grow items-center bg-white lg:bg-opacity-0 lg:shadow-none" +
-              (navbarOpen ? " block rounded shadow-lg" : " hidden")
-            }
-            id="example-navbar-warning"
+    <nav
+      className={`fixed top-0 z-50 w-full transition-all duration-300 ${
+        scrolled
+          ? 'bg-white/95 backdrop-blur-md shadow-sm border-b border-emerald-100'
+          : 'bg-white/90 backdrop-blur-sm'
+      }`}
+      aria-label="Primary"
+    >
+      <div className="container mx-auto px-4">
+        <div className="flex h-16 items-center justify-between gap-4">
+          <BrandLogo size="md" onClick={closeMenu} className="shrink-0" />
+
+          <button
+            type="button"
+            className="lg:hidden inline-flex items-center justify-center rounded-md p-2 text-emerald-900 hover:bg-emerald-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700"
+            aria-expanded={navbarOpen}
+            aria-controls="primary-nav-menu"
+            aria-label={navbarOpen ? 'Close menu' : 'Open menu'}
+            onClick={() => setNavbarOpen((v) => !v)}
           >
-            <ul className="flex flex-col lg:flex-row list-none mr-auto">
-              <li className="flex items-center">
-                <a href="/#about" className="lg:text-emerald-800 lg:hover:text-slate-600 text-emerald-800 px-3 py-4 lg:py-2 flex items-center text-xs uppercase font-bold">About</a>
-              </li>
-              <li className="flex items-center">
-                <a href="/#services" className="lg:text-emerald-800 lg:hover:text-slate-600 text-emerald-800 px-3 py-4 lg:py-2 flex items-center text-xs uppercase font-bold">Services</a>
-              </li>
-              <li className="flex items-center">
-                <a href="/#contact" className="lg:text-emerald-800 lg:hover:text-slate-600 text-emerald-800 px-3 py-4 lg:py-2 flex items-center text-xs uppercase font-bold">Contact</a>
-              </li>
-              <li className="flex items-center">
-                <a href="/#contact" className="lg:text-emerald-800 lg:hover:text-slate-600 text-emerald-800 px-3 py-4 lg:py-2 flex items-center text-xs uppercase font-bold">FAQs</a>
-              </li>
-            </ul>
-            <ul className="flex flex-col lg:flex-row list-none lg:ml-auto">
-              <li className="flex items-center">
-                <a
-                  className="lg:text-emerald-800 lg:hover:text-slate-600 text-emerald-800 px-3 py-4 lg:py-2 flex items-center text-xs uppercase font-bold"
-                  href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fdemos.creative-tim.com%2Fnotus-nextjs%2F"
-                  target="_blank" rel="noreferrer"
-                >
-                  <i className="lg:text-emerald-800 text-slate-400 fab fa-facebook text-lg leading-lg " />
-                  <span className="lg:hidden inline-block ml-2">Share</span>
-                </a>
-              </li>
+            <i className={`fas ${navbarOpen ? 'fa-times' : 'fa-bars'} text-lg`} aria-hidden="true" />
+          </button>
 
-              <li className="flex items-center">
-                <a
-                  className="lg:text-emerald-800 lg:hover:text-slate-600 text-emerald-800 px-3 py-4 lg:py-2 flex items-center text-xs uppercase font-bold"
-                  href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fdemos.creative-tim.com%2Fnotus-nextjs%2F&text=Start%20your%20development%20with%20a%20Free%20Tailwind%20CSS%20and%20NextJS%20UI%20Kit%20and%20Admin.%20Let%20Notus%20NextJS%20amaze%20you%20with%20its%20cool%20features%20and%20build%20tools%20and%20get%20your%20project%20to%20a%20whole%20new%20level."
-                  target="_blank" rel="noreferrer"
-                >
-                  <i className="lg:text-emerald-800 text-slate-400 fab fa-twitter text-lg leading-lg " />
-                  <span className="lg:hidden inline-block ml-2">Tweet</span>
-                </a>
-              </li>
-
-              <li className="flex items-center">
-                <a
-                  className="lg:text-emerald-800 lg:hover:text-slate-600 text-emerald-800 px-3 py-4 lg:py-2 flex items-center text-xs uppercase font-bold"
-                  href="https://instagram.com/creativetimofficial/notus-nextjs?ref=nnjs-auth-navbar"
-                  target="_blank" rel="noreferrer"
-                >
-                  <i className="lg:text-emerald-800 text-slate-400 fab fa-instagram text-lg leading-lg " />
-                  <span className="lg:hidden inline-block ml-2">Star</span>
-                </a>
-              </li>
-              <li className="flex items-center">
-                <AuthDropDown isOpen={isOpen} popupType={popupType} togglePopup={togglePopup} />
-              </li>
+          <div
+            id="primary-nav-menu"
+            className={`${
+              navbarOpen ? 'flex' : 'hidden'
+            } absolute left-0 right-0 top-16 flex-col gap-1 bg-white border-b border-emerald-100 p-4 shadow-lg lg:static lg:flex lg:flex-row lg:items-center lg:gap-1 lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none`}
+          >
+            <ul className="flex flex-col lg:flex-row lg:items-center gap-1 flex-1">
+              {NAV_LINKS.map((link) => (
+                <li key={link.label}>
+                  {link.isRoute ? (
+                    <Link
+                      to={link.href}
+                      onClick={closeMenu}
+                      className="block rounded-md px-3 py-2 text-sm font-medium text-emerald-900 hover:bg-emerald-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700"
+                    >
+                      {link.label}
+                    </Link>
+                  ) : (
+                    <a
+                      href={link.href}
+                      onClick={closeMenu}
+                      className="block rounded-md px-3 py-2 text-sm font-medium text-emerald-900 hover:bg-emerald-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700"
+                    >
+                      {link.label}
+                    </a>
+                  )}
+                </li>
+              ))}
             </ul>
+
+            <div className="mt-3 flex flex-col gap-2 border-t border-emerald-100 pt-3 lg:mt-0 lg:ml-4 lg:flex-row lg:items-center lg:border-0 lg:pt-0">
+              <button
+                type="button"
+                onClick={() => openAuth('login')}
+                className="rounded-md px-4 py-2 text-sm font-semibold text-emerald-900 hover:bg-emerald-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700"
+              >
+                Log in
+              </button>
+              <button
+                type="button"
+                onClick={() => openAuth('register')}
+                className="rounded-md bg-emerald-800 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-emerald-700"
+              >
+                Join free
+              </button>
+            </div>
           </div>
         </div>
-      </nav>
-    </>
+      </div>
+    </nav>
   );
 }

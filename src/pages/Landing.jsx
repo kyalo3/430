@@ -1,387 +1,253 @@
-import { useEffect, useState} from "react";
-import Navbar from "../components/Navbars/AuthNavbar.jsx";
-import Footer from "../components/Footers/Footer.jsx";
-import { AuthModal } from "../components/Popups/AuthModal.jsx";
-import ToggleButtons from "../components/Toggles/ToggleButtons.jsx";
-import team from '../assets/images/team.svg'
-import family from '../assets/images/family.svg'
-import HeroesSlider from "../components/Sliders/HeroesSlider.jsx";
-import ArticleSlider from "../components/Sliders/ArticleSlider.jsx";
-import api from "../lib/api";
+import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import Navbar from '../components/Navbars/AuthNavbar.jsx';
+import Footer from '../components/Footers/Footer.jsx';
+import { AuthModal } from '../components/Popups/AuthModal.jsx';
+import HowItWorksSection from '../components/landing/HowItWorksSection.jsx';
+import CaseStudiesSection from '../components/landing/CaseStudiesSection.jsx';
+import TestimonialsSection from '../components/landing/TestimonialsSection.jsx';
+import ClosingSection from '../components/landing/ClosingSection.jsx';
+import StickyMobileCta from '../components/landing/StickyMobileCta.jsx';
+import { MEDIA } from '../constants/media';
+import api from '../lib/api';
 
+const ROLES = [
+  {
+    title: 'Donate resources',
+    body: 'List surplus with condition, quantity, and collection windows. Track matching through to confirmed impact.',
+    action: 'register',
+    image: MEDIA.pantry,
+  },
+  {
+    title: 'Request support',
+    body: 'Share a need privately. See suitable matches with clear reasons — without public recipient profiles.',
+    action: 'register',
+    image: MEDIA.community,
+  },
+  {
+    title: 'Volunteer',
+    body: 'Accept logistics tasks in your area and confirm handovers with a verified contribution record.',
+    action: 'register',
+    image: MEDIA.volunteers,
+  },
+  {
+    title: 'Partner with us',
+    body: 'Organisations can participate with governance, bulk listings, and accountable impact reporting.',
+    action: 'register',
+    image: MEDIA.kitchen,
+  },
+];
 
-export default function Landing({isOpen, popupType, togglePopup}) {
-  const [activeToggle, setActiveToggle] = useState('Donors');
+export default function Landing({ isOpen, popupType, togglePopup }) {
   const [impact, setImpact] = useState(null);
-  const RecipientsSlides = [
-    {
-      id: 1,
-      image: '/images/ngo.png',
-      name: 'Community partner',
-      description: 'Verified organisational recipient',
-      testimonial: 'When listings are verified and handovers confirmed, surplus reaches people who need it — without public exposure of private circumstances.'
-    },
-  ];
 
-  const DonorsSlides = [
-    {
-      id: 1,
-      image: '/images/ngo.png',
-      name: 'Local surplus donor',
-      description: 'Hospitality and pantry partners',
-      testimonial: 'Listing surplus with clear status and impact receipts makes giving trustworthy and repeatable.'
-    },
-  ];
   useEffect(() => {
     window.scrollTo(0, 0);
-    api.get('/impact/summary').then((res) => setImpact(res.data)).catch(() => setImpact({ empty: true, verified_fulfilments: 0 }));
+    api
+      .get('/impact/summary')
+      .then((res) => setImpact(res.data))
+      .catch(() => setImpact({ empty: true, verified_fulfilments: 0 }));
   }, []);
 
   return (
     <>
-      <Navbar isOpen={isOpen} popupType={popupType} togglePopup={togglePopup} />
-      <main>
-        <div className="relative pt-16 pb-32 flex content-center items-center justify-center min-h-screen-75">
-          <div
-            className="absolute top-0 w-full h-full bg-center bg-cover"
-            style={{
-              backgroundImage:
-                "url('/images/hero.webp')",
-              }}
-          >
-            <span
-              id="blackOverlay"
-              className="w-full h-full absolute opacity-50 bg-black"
-            ></span>
+      <Navbar togglePopup={togglePopup} />
+      <main className="pt-16 pb-24 md:pb-0">
+        {/* Hero — full-bleed atmosphere, readable without crushing the photo */}
+        <section className="relative min-h-[92vh] flex items-end sm:items-center overflow-hidden">
+          <div className="absolute inset-0 overflow-hidden" aria-hidden="true">
+            <img
+              src={MEDIA.hero.src}
+              alt=""
+              className="hero-kenburns h-full w-full object-cover"
+              style={{ objectPosition: MEDIA.hero.objectPosition }}
+              fetchPriority="high"
+            />
           </div>
-          <div className="container relative mx-auto">
-            <div className="items-center flex flex-wrap">
-              <div className="w-full lg:w-8/12 px-4 ml-auto mr-auto text-center">
-                <div className="pr-12">
-                  <p className="text-emerald-200 uppercase tracking-wide text-sm mb-3">Sustainashare</p>
-                  <h1 className="text-white font-semibold text-4xl md:text-5xl">
-                    Turn surplus into verified community support
-                  </h1>
-                  <p className="mt-4 text-lg text-slate-200">
-                    Donors list usable resources. Recipients share needs with dignity. Volunteers complete safe handovers.
-                    Administrators verify and account for every completed journey — so waste falls and trust rises.
-                  </p>
-                  <p className="mt-3 text-sm text-slate-300">
-                    Exact addresses and sensitive needs stay private. Impact figures only count confirmed fulfilments.
-                  </p>
-                  <div className="mt-8 flex flex-wrap gap-3 justify-center">
-                    <button type="button" className="px-5 py-3 bg-orange-500 text-white rounded-md font-medium" onClick={() => togglePopup('register')}>Donate resources</button>
-                    <button type="button" className="px-5 py-3 bg-white/10 text-white border border-white/40 rounded-md font-medium" onClick={() => togglePopup('register')}>Request support</button>
-                    <button type="button" className="px-5 py-3 bg-emerald-600 text-white rounded-md font-medium" onClick={() => togglePopup('register')}>Volunteer</button>
-                    <button type="button" className="px-5 py-3 bg-transparent text-white border border-white/40 rounded-md font-medium" onClick={() => togglePopup('register')}>Partner with us</button>
-                  </div>
-                  <div className="mt-6 text-slate-200 text-sm">
-                    {impact?.empty || !impact?.verified_fulfilments ? (
-                      <span>Verified impact will appear here after the first confirmed fulfilment — we never invent counters.</span>
-                    ) : (
-                      <span>{impact.verified_fulfilments} verified fulfilments · {impact.quantity_redistributed} units redistributed (see methodology in docs)</span>
-                    )}
-                  </div>
-                  <AuthModal isOpen={isOpen} togglePopup={togglePopup} popupType={popupType} />
-                </div>
-              </div>
-            </div>
-          </div>
-          <div
-            className="top-auto bottom-0 left-0 right-0 w-full absolute pointer-events-none overflow-hidden h-16"
-            style={{ transform: "translateZ(0)" }}
-          >
-            <svg
-              className="absolute bottom-0 overflow-hidden"
-              xmlns="http://www.w3.org/2000/svg"
-              preserveAspectRatio="none"
-              version="1.1"
-              viewBox="0 0 2560 100"
-              x="0"
-              y="0"
-            >
-              <polygon
-                className="text-slate-200 fill-current"
-                points="2560 0 2560 100 0 100"
-              ></polygon>
-            </svg>
-          </div>
-        </div>
+          {/* Directional veil: strong on left for type, open on right so produce stays vivid */}
+          <div className="absolute inset-0 bg-gradient-to-r from-emerald-950/90 via-emerald-950/55 to-emerald-950/20" />
+          <div className="absolute inset-0 bg-gradient-to-t from-emerald-950/70 via-transparent to-emerald-950/30" />
 
-        <section className="pb-20 bg-slate-200 -mt-24">
-          <div className="container mx-auto px-4">
-            <div className="flex flex-wrap">
-              <div className="lg:pt-12 pt-6 w-full md:w-4/12 px-4 text-center">
-                <div className="relative flex flex-col min-w-0 break-words bg-white w-full mb-8 shadow-lg rounded-lg">
-                  <div className="px-4 py-5 flex-auto">
-                    <div className="text-white p-3 text-center inline-flex items-center justify-center w-12 h-12 mb-5 shadow-lg rounded-full bg-emerald-400">
-                    <i className="fas fa-seedling"></i>                    </div>
-                    <h6 className="text-xl font-semibold">Waste Management</h6>
-                    <p className="mt-2 mb-4 text-emerald-800">
-                    Throwing stuff into landfills is expensive and wasteful. We&apos;ve got a solution to help you stop.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="w-full md:w-4/12 px-4 text-center">
-                <div className="relative flex flex-col min-w-0 break-words bg-white w-full mb-8 shadow-lg rounded-lg">
-                <div className="px-4 py-5 flex-auto">
-                    <div className="text-white p-3 text-center inline-flex items-center justify-center w-12 h-12 mb-5 shadow-lg rounded-full bg-red-400">
-                    🍎
-                    </div>
-                    <h6 className="text-xl font-semibold">Food Security</h6>
-                    <p className="mt-2 mb-4 text-emerald-800">
-                      With your help, we ensure that vulnerable populations have access to basic necessities.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="pt-6 w-full md:w-4/12 px-4 text-center">
-                <div className="relative flex flex-col min-w-0 break-words bg-white w-full mb-8 shadow-lg rounded-lg">
-                  <div className="px-4 py-5 flex-auto">
-                    <div className="text-white p-3 text-center inline-flex items-center justify-center w-12 h-12 mb-5 shadow-lg rounded-full bg-lightBlue-400">
-                    🌍
-                    </div>
-                    <h6 className="text-xl font-semibold">Community Development</h6>
-                    <p className="mt-2 mb-4 text-emerald-800">
-                    Your support stands out by enabling unique community development initiatives and programs.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex flex-wrap justify-between mt-16">
-              <div className="w-full md:w-5/12 px-4">
-                <div className="text-emerald-800 p-3 text-center inline-flex items-center justify-center w-16 h-16 mb-6 shadow-lg rounded-full bg-white">
-                <i className="fas fa-rocket text-xl"></i>
-                </div>
-                <h3 className="text-3xl  mb-2 font-semibold leading-normal">
-                  We&apos;ve made donations our business, so you can focus on yours.
-                </h3>
-                <p className="text-lg font-light leading-relaxed mt-4 mb-4 text-emerald-700">
-                If donating is good for the planet, your community, and your bottom line, why isn&apos;t every business doing it? Because doing it by yourself can be hard. SustainaShare is here to make it easy, scalable, worthy of celebration, and financially beneficial.</p>
-                <p className="text-lg font-light leading-relaxed mt-0 mb-4 text-emerald-700">
-                You&apos;ll always get flexible delivery options, a home for your surplus, and a receipt for tax documentation. But if you&apos;re looking for more features, a fully-fledged SustainaShare subscription may be just what you need.
-                </p>
-                <a href="/" className="font-bold text-orange-500 mt-8">
-                    Check SustainaShare for businesses
+          <div className="container relative z-10 mx-auto px-6 sm:px-8 lg:px-10 py-24 sm:py-28">
+            <div className="max-w-xl lg:max-w-2xl">
+              <p className="hero-fade-in font-display text-emerald-200 text-lg sm:text-xl font-semibold mb-4">
+                Sustainashare
+              </p>
+              <h1 className="hero-fade-in-delay font-display text-4xl sm:text-5xl lg:text-6xl font-semibold text-white leading-[1.08]">
+                Turn surplus into verified community support
+              </h1>
+              <p className="hero-fade-in-delay-2 mt-6 text-base sm:text-lg text-emerald-50/95 max-w-lg leading-relaxed">
+                List usable resources, match legitimate needs, complete safe handovers, and count only confirmed impact.
+              </p>
+              <div className="hero-fade-in-delay-2 mt-9 flex flex-wrap gap-3">
+                <button
+                  type="button"
+                  onClick={() => togglePopup('register')}
+                  className="rounded-xl bg-orange-500 px-7 py-3.5 text-sm font-bold text-white shadow-lg shadow-orange-500/25 hover:bg-orange-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-orange-400"
+                >
+                  Get started free
+                </button>
+                <a
+                  href="#how-it-works"
+                  className="rounded-xl border border-white/50 bg-white/15 px-7 py-3.5 text-sm font-bold text-white backdrop-blur-sm hover:bg-white/25 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                >
+                  See how it works
                 </a>
               </div>
+              <p className="hero-fade-in-delay-2 mt-7 text-sm text-emerald-100/85 max-w-md">
+                {impact?.empty || !impact?.verified_fulfilments ? (
+                  <>Verified impact appears after the first confirmed fulfilment — we never invent counters.</>
+                ) : (
+                  <>
+                    {impact.verified_fulfilments} verified fulfilments · {impact.quantity_redistributed} units
+                    redistributed
+                  </>
+                )}
+              </p>
+            </div>
+          </div>
 
-              <div className="w-full md:w-4/12 px-4">
-                <div className="relative flex flex-col min-w-0 break-words w-full mb-6 shadow-lg rounded-lg bg-emerald-800">
+          <a
+            href="#participate"
+            className="absolute bottom-6 left-1/2 z-10 hidden -translate-x-1/2 text-white/80 hover:text-white sm:inline-flex flex-col items-center gap-1 text-xs font-semibold tracking-wide"
+          >
+            Explore
+            <i className="fas fa-chevron-down animate-bounce" aria-hidden="true" />
+          </a>
+
+          <AuthModal isOpen={isOpen} togglePopup={togglePopup} popupType={popupType} />
+        </section>
+
+        {/* Trust strip with visual rhythm */}
+        <section
+          className="relative z-10 -mt-8 sm:-mt-10 mx-4 sm:mx-auto sm:max-w-5xl rounded-2xl border border-emerald-100/80 bg-white/95 backdrop-blur shadow-xl shadow-emerald-950/10 py-6 px-5 sm:px-8"
+          aria-label="Trust principles"
+        >
+          <div className="grid gap-6 sm:grid-cols-3">
+            {[
+              { title: 'Privacy by design', body: 'Sensitive needs stay off public pages.' },
+              { title: 'Verified journeys', body: 'Listings cannot skip review steps.' },
+              { title: 'Honest impact', body: 'Only recipient-confirmed journeys count.' },
+            ].map((item) => (
+              <div key={item.title} className="text-center sm:text-left">
+                <p className="font-display text-lg font-semibold text-emerald-950">{item.title}</p>
+                <p className="mt-1 text-sm text-emerald-800/75">{item.body}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Role CTAs with photography */}
+        <section id="participate" className="scroll-mt-24 py-20 sm:py-24 bg-[#f3f7f4]" aria-labelledby="participate-heading">
+          <div className="container mx-auto px-6 sm:px-8">
+            <p className="text-sm font-bold uppercase tracking-[0.14em] text-emerald-700 mb-3">Participate</p>
+            <h2 id="participate-heading" className="font-display text-3xl md:text-5xl font-semibold text-emerald-950 mb-4 max-w-2xl">
+              Choose how you contribute
+            </h2>
+            <p className="text-emerald-800/80 mb-12 max-w-2xl text-lg">
+              One platform, four ways in — each route strengthens the same redistribution journey.
+            </p>
+            <div className="grid gap-5 md:grid-cols-2">
+              {ROLES.map((role) => (
+                <button
+                  key={role.title}
+                  type="button"
+                  onClick={() => togglePopup(role.action)}
+                  className="group relative overflow-hidden rounded-3xl text-left min-h-[220px] focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2"
+                >
                   <img
-                    alt="..."
-                    src={team}
-                    className="w-full align-middle rounded-t-lg bg-emerald-50"
+                    src={role.image.src}
+                    alt=""
+                    className="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105"
+                    style={{ objectPosition: role.image.objectPosition }}
+                    loading="lazy"
                   />
-                  <blockquote className="relative p-8 mb-4">
-                    <svg
-                      preserveAspectRatio="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 583 95"
-                      className="absolute left-0 w-full block h-95-px -top-94-px"
-                    >
-                      <polygon
-                        points="-30,95 583,95 583,65"
-                        className="text-emerald-800 fill-current"
-                      ></polygon>
-                    </svg>
-                    <h4 className="text-xl font-bold text-white">
-                      Top Notch Services
-                    </h4>
-                    <p className="text-md font-light mt-2 text-white">
-                    SustainaShare is the leading technology-enabled surplus recovery service, empowering businesses to easily distribute their surplus. National brands across Kenya work with SustainaShare to reduce food insecurity in the communities where they operate, help reduce their greenhouse gas emissions, and boost their profitability.
-                    </p>
-                  </blockquote>
-                </div>
-              </div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-emerald-950/90 via-emerald-950/45 to-emerald-950/10" />
+                  <div className="relative z-10 flex h-full flex-col justify-end p-6 sm:p-7">
+                    <h3 className="font-display text-2xl font-semibold text-white">{role.title}</h3>
+                    <p className="mt-2 text-sm text-emerald-50/90 leading-relaxed max-w-md">{role.body}</p>
+                    <span className="mt-4 inline-flex items-center gap-2 text-sm font-bold text-orange-300">
+                      Continue <i className="fas fa-arrow-right text-xs" aria-hidden="true" />
+                    </span>
+                  </div>
+                </button>
+              ))}
             </div>
           </div>
         </section>
 
-        <section className="relative py-20">
-          <div
-            className="bottom-auto top-0 left-0 right-0 w-full absolute pointer-events-none overflow-hidden -mt-20 h-20"
-            style={{ transform: "translateZ(0)" }}
-          >
-            <svg
-              className="absolute bottom-0 overflow-hidden"
-              xmlns="http://www.w3.org/2000/svg"
-              preserveAspectRatio="none"
-              version="1.1"
-              viewBox="0 0 2560 100"
-              x="0"
-              y="0"
-            >
-              <polygon
-                className="text-white fill-current"
-                points="2560 0 2560 100 0 100"
-              ></polygon>
-            </svg>
-          </div>
+        <HowItWorksSection />
 
-          <div className="container mx-auto px-4">
-            <div className="flex flex-wrap justify-between">
-            <div className="w-full rounded-lg shadow-lg bg-emerald-50 flex items-center justify-center h-[36rem] md:w-4/12 mr-auto px-4">
-            <img
-                  alt="..."
-                  className="max-w-full my-auto"
-                  src={family}
+        {/* Product proof with real photo */}
+        <section className="py-20 sm:py-24 bg-emerald-950 text-white overflow-hidden" aria-labelledby="product-heading">
+          <div className="container mx-auto px-6 sm:px-8 grid gap-12 lg:grid-cols-2 items-center">
+            <div>
+              <p className="text-sm font-bold uppercase tracking-[0.14em] text-orange-300 mb-3">Why Sustainashare</p>
+              <h2 id="product-heading" className="font-display text-3xl md:text-5xl font-semibold mb-5 leading-tight">
+                Built for trusted redistribution — not retail noise
+              </h2>
+              <p className="text-emerald-100/90 leading-relaxed mb-7 text-lg">
+                Surplus and unmet need often exist side by side. Sustainashare closes the coordination gap with
+                verification, matching, logistics, confirmation, and accountable reporting.
+              </p>
+              <ul className="space-y-3 text-sm text-emerald-50">
+                <li className="flex gap-3">
+                  <i className="fas fa-shield-alt text-orange-300 mt-0.5" aria-hidden="true" />
+                  Role-based access with backend enforcement
+                </li>
+                <li className="flex gap-3">
+                  <i className="fas fa-route text-orange-300 mt-0.5" aria-hidden="true" />
+                  Explicit donation and need lifecycles
+                </li>
+                <li className="flex gap-3">
+                  <i className="fas fa-balance-scale text-orange-300 mt-0.5" aria-hidden="true" />
+                  Explainable matching before any automation claims
+                </li>
+              </ul>
+              <div className="mt-9 flex flex-wrap gap-3">
+                <Link
+                  to="/shop"
+                  className="rounded-xl bg-white px-5 py-3.5 text-sm font-bold text-emerald-950 hover:bg-emerald-50"
+                >
+                  Browse surplus categories
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => togglePopup('login')}
+                  className="rounded-xl border border-white/35 px-5 py-3.5 text-sm font-bold text-white hover:bg-white/10"
+                >
+                  Log in to your dashboard
+                </button>
+              </div>
+            </div>
+            <div className="relative">
+              <div className="absolute -inset-4 rounded-[2rem] bg-orange-500/20 blur-2xl" aria-hidden="true" />
+              <figure className="relative overflow-hidden rounded-[1.75rem] border border-white/10 shadow-2xl">
+                <img
+                  src={MEDIA.handover.src}
+                  alt={MEDIA.handover.alt}
+                  className="h-[420px] w-full object-cover"
+                  style={{ objectPosition: MEDIA.handover.objectPosition }}
+                  loading="lazy"
                 />
-              </div>
-              <div className="w-full md:w-5/12 ml-auto px-4">
-                <div className="md:pr-12">
-                  <div className="text-emerald-800 p-3 text-center inline-flex items-center justify-center w-16 h-16 mb-6 shadow-lg rounded-full bg-slate-200">
-                  <i className="fas fa-user-friends text-xl"></i>
-                  </div>
-                  <h3 className="text-3xl font-semibold">Empowering neighbors: providing nourishment for those in need</h3>
-                  <p className="mt-4 text-lg text-justify leading-relaxed text-emerald-800">
-                    The most important piece of our donation program is our strong network of thousands of nonprofit organizations that are eager to receive donations from their communities. More than 1 in 10 Kenyans are food insecure, and our nonprofit partners work every day to help their neighbors in need.
-                  </p>
-                  <p className="mt-4 mb-4 text-lg leading-relaxed text-emerald-800">
-                    SustainaShare is designed to make sure our partners get what they need and there&apos;s no “donation dumping.” It streamlines the donation intake process and is the access point for everything our nonprofit community might need.
-                  </p>
-                  <a href="/"className="font-bold text-orange-500 mt-8">
-                    Check SustainaShare for individuals
-                  </a>
-                </div>
-              </div>
+                <figcaption className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-emerald-950/90 to-transparent p-6 text-sm text-emerald-50">
+                  Coordination across donors, recipients, and volunteers — with privacy as a product requirement.
+                </figcaption>
+              </figure>
             </div>
           </div>
         </section>
 
-        <section className="pt-20 pb-48 bg-slate-50">
-          <div className="container mx-auto px-4">
-            <div className="flex items-center flex-col flex-wrap justify-center text-center mb-4">
-              <div className="w-full lg:w-6/12">
-                <h2 className="text-4xl font-semibold text-emerald-900 mb-4">Rescuing Food, Empowering Communities<br/> Here are our heroes</h2>
-              </div>
-              <ToggleButtons 
-                toggles={{first:'Donors', second:'Recipients'}}
-                activeToggle={activeToggle}
-                setActiveToggle={setActiveToggle}
-              />
-            </div>
-            <div className="flex flex-wrap">
-              {activeToggle === 'Donors' && <HeroesSlider slides= {DonorsSlides} />}
-              {activeToggle === 'Recipients' && <HeroesSlider  slides={RecipientsSlides}/>}
-            </div>
-          </div>
-        </section>
-
-        <section className="pb-20 relative block bg-emerald-900">
-          <div
-            className="bottom-auto top-0 left-0 right-0 w-full absolute pointer-events-none overflow-hidden -mt-20 h-20"
-            style={{ transform: "translateZ(0)" }}
-          >
-            <svg
-              className="absolute bottom-0 overflow-hidden"
-              xmlns="http://www.w3.org/2000/svg"
-              preserveAspectRatio="none"
-              version="1.1"
-              viewBox="0 0 2560 100"
-              x="0"
-              y="0"
-            >
-              <polygon
-                className="text-emerald-900 fill-current"
-                points="2560 0 2560 100 0 100"
-              ></polygon>
-            </svg>
-          </div>
-
-          <div className="container mx-auto px-4 lg:pt-24 lg:pb-64">
-            <div className="flex flex-wrap text-center justify-center">
-              <div className="w-full lg:w-6/12 px-4">
-                <h2 className="text-4xl font-semibold text-orange-500">
-                  Latest Updates
-                </h2>
-                <p className="text-lg leading-relaxed mt-4 mb-4 text-white">
-                Learn about how Sustainashare is empowering communities to create a future that is secure, just and free from poverty.
-                </p>
-              </div>
-            </div>
-            <div className="flex flex-wrap mt-12 justify-center">
-              <ArticleSlider/>
-            </div>
-          </div>
-        </section>
-        <section className="relative block py-24 lg:pt-0 bg-emerald-900">
-          <div className="container mx-auto px-4">
-            <div className="flex flex-wrap justify-center lg:-mt-64 -mt-48">
-              <div className="w-full lg:w-6/12 px-4">
-                <div className="relative flex flex-col min-w-0 break-words w-full mb-6 shadow-lg rounded-lg bg-slate-200">
-                  <div className="flex-auto p-5 lg:p-10">
-                    <h4 className="text-2xl font-semibold">
-                      Want to talk to us?
-                    </h4>
-                    <p className="leading-relaxed mt-1 mb-4 text-emerald-800">
-                      Complete this form and we will get back to you in 24
-                      hours.
-                    </p>
-                    <div className="relative w-full mb-3 mt-8">
-                      <label
-                        className="block uppercase text-emerald-700 text-xs font-bold mb-2"
-                        htmlFor="full-name"
-                      >
-                        Full Name
-                      </label>
-                      <input
-                        type="text"
-                        className="border-0 px-3 py-3 placeholder-slate-300 text-emerald-700 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150"
-                        placeholder="Full Name"
-                      />
-                    </div>
-
-                    <div className="relative w-full mb-3">
-                      <label
-                        className="block uppercase text-emerald-700 text-xs font-bold mb-2"
-                        htmlFor="email"
-                      >
-                        Email
-                      </label>
-                      <input
-                        type="email"
-                        className="border-0 px-3 py-3 placeholder-slate-300 text-emerald-700 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150"
-                        placeholder="Email"
-                      />
-                    </div>
-
-                    <div className="relative w-full mb-3">
-                      <label
-                        className="block uppercase text-emerald-700 text-xs font-bold mb-2"
-                        htmlFor="message"
-                      >
-                        Message
-                      </label>
-                      <textarea
-                        rows="4"
-                        cols="80"
-                        className="border-0 px-3 py-3 placeholder-slate-300 text-emerald-700 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full"
-                        placeholder="Type a message..."
-                      />
-                    </div>
-                    <div className="text-center mt-6">
-                      <button
-                        className="bg-emerald-900 text-white active:bg-emerald-700 text-sm font-bold uppercase px-6 py-3 rounded shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150"
-                        type="submit"
-                      >
-                        Send Message
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
+        <CaseStudiesSection onCta={() => togglePopup('register')} />
+        <TestimonialsSection />
+        <ClosingSection onJoin={() => togglePopup('register')} />
       </main>
+
       <Footer />
+      <StickyMobileCta
+        onPrimary={() => togglePopup('register')}
+        onSecondary={() => togglePopup('login')}
+      />
     </>
   );
 }
-

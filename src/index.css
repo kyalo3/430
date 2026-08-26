@@ -1,3 +1,77 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-sans: 'Manrope', ui-sans-serif, system-ui, sans-serif;
+  --ss-emerald: #0f3d2e;
+  --ss-orange: #f97316;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    color: #102a1f;
+    background-color: #f7faf8;
+  }
+
+  h1,
+  h2,
+  .font-display {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+  }
+}
+
+@layer utilities {
+  .hero-kenburns {
+    animation: hero-kenburns 22s ease-in-out infinite alternate;
+    will-change: transform;
+  }
+
+  .hero-fade-in {
+    animation: hero-fade-in 0.9s ease-out both;
+  }
+
+  .hero-fade-in-delay {
+    animation: hero-fade-in 1s ease-out 0.15s both;
+  }
+
+  .hero-fade-in-delay-2 {
+    animation: hero-fade-in 1s ease-out 0.28s both;
+  }
+}
+
+@keyframes hero-kenburns {
+  from {
+    transform: scale(1.05) translate3d(0, 0, 0);
+  }
+  to {
+    transform: scale(1.14) translate3d(-1.5%, 1%, 0);
+  }
+}
+
+@keyframes hero-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-kenburns,
+  .hero-fade-in,
+  .hero-fade-in-delay,
+  .hero-fade-in-delay-2 {
+    animation: none !important;
+  }
+}

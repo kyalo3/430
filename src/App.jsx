@@ -4,9 +4,11 @@ import { lazy, Suspense, useState } from 'react';
 import Landing from './pages/Landing';
 import RoleRoute from './components/RoleRoute';
 import ErrorBoundary from './components/ErrorBoundary';
+import RouteMeta from './components/RouteMeta';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 
 const ShoppingPage = lazy(() => import('./pages/ShoppingPage'));
+const FaqsPage = lazy(() => import('./pages/FaqsPage'));
 const CollectionsPage = lazy(() => import('./pages/CollectionsPage'));
 const ProductPage = lazy(() => import('./pages/ProductPage'));
 const DonorDashboard = lazy(() => import('./pages/DonorDashboard'));
@@ -33,6 +35,7 @@ function App() {
   return (
     <ErrorBoundary>
       <Router>
+        <RouteMeta />
         <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading…</div>}>
           <Routes>
             <Route
@@ -47,6 +50,7 @@ function App() {
               }
             />
             <Route path="/shop" element={<ShoppingPage />} />
+            <Route path="/faqs" element={<FaqsPage />} />
             <Route path="/shop/collection/:category" element={<CollectionsPage />} />
             <Route path="/shop/collection/:category/:product/:productid" element={<ProductPage />} />
             <Route

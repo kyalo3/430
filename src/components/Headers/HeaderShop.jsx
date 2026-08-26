@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import logo from '../../assets/images/logo.png'
+import BrandLogo from '../BrandLogo';
 import SearchBar from '../SearchBars/SearchBar';
 import { FiUser } from "react-icons/fi";
 import { BiSearch } from 'react-icons/bi';
@@ -38,9 +38,7 @@ const HeaderShop = () => {
         <div className="flex justify-between h-full">
           <div className="flex items-center">
             <div className="flex-shrink-0 mr-16">
-              <a href="/shop" >
-                <img className="w-32 h-auto" src={logo} alt="Logo" />
-              </a>
+              <BrandLogo to="/shop" size="lg" />
             </div>
             {!showSearchBar && <CategoriesNavbar/>}
           </div>
