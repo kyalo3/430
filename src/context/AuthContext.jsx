@@ -1,113 +1,97 @@
-import { createContext, useState, useEffect } from 'react';
-import axios from 'axios';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
+import { createContext, useState, useEffect, useContext } from 'react';
+import api, { setAccessToken, setCsrfToken, clearClientAuth } from '../lib/api';
 
 export const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
-  const [userToken, setUserToken] = useState(null);
-  const [userRole, setUserRole] = useState(null); // 'donor', 'recipient', 'volunteer', 'admin'
+  const [userRole, setUserRole] = useState(null);
   const [showDonorRec, setShowDonorRec] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  // userToken kept as boolean-ish for legacy components; never persisted
+  const [userToken, setUserToken] = useState(null);
 
-  // Fetch full user data from backend
-  const fetchCurrentUser = async (token) => {
-    try {
-      const config = { headers: { Authorization: `Bearer ${token}` } };
-      const res = await axios.get(`${API_URL}/users/me`, config);
-
-      if (res.data) {
-        setCurrentUser(res.data);
-        localStorage.setItem('user', JSON.stringify(res.data));
-
-        if (res.data.role) {
-          setUserRole(res.data.role);
-          localStorage.setItem('userRole', res.data.role);
-        } else {
-          setUserRole(null);
-          localStorage.removeItem('userRole');
-        }
-      }
-    } catch (err) {
-      console.error('Failed to fetch current user:', err);
-      setCurrentUser(null);
-      setUserRole(null);
-      localStorage.removeItem('userRole');
-      localStorage.removeItem('user');
+  const applySession = (payload) => {
+    if (payload?.access_token) {
+      setAccessToken(payload.access_token);
+      setUserToken(payload.access_token);
+    }
+    if (payload?.csrf_token) setCsrfToken(payload.csrf_token);
+    if (payload?.user) {
+      setCurrentUser(payload.user);
+      setUserRole(payload.user.role);
     }
   };
 
-  // Sign-up function
-  const signUp = async (username, email, password, role, adminCode) => {
+  const fetchCurrentUser = async () => {
+    const res = await api.get('/users/me');
+    setCurrentUser(res.data);
+    setUserRole(res.data.role);
+    return res.data;
+  };
+
+  const signUp = async (username, email, password, role) => {
     try {
-      const payload = {
-        user: { username, email, role, password },
-        admin_code: adminCode || '',
-      };
-
-      await axios.post(`${API_URL}/register`, payload);
-
-      // Auto-login after registration
+      await api.post('/register', { user: { username, email, role, password } });
       await signIn(username, password);
-
       setShowDonorRec(true);
     } catch (err) {
-      console.error('Registration error:', err.response?.data || err.message);
-      setError(err.response?.data || err.message);
+      setError(err.message);
       throw err;
     }
   };
 
-  // Sign-in function
   const signIn = async (identifier, password) => {
     try {
       const formData = new URLSearchParams();
       formData.append('username', identifier);
       formData.append('password', password);
-
-      const response = await axios.post(`${API_URL}/token`, formData, {
+      const response = await api.post('/token', formData, {
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       });
-
-      const token = response.data.access_token;
-      setUserToken(token);
-      localStorage.setItem('token', token);
-
-      // Fetch the full user data
-      await fetchCurrentUser(token);
-
+      applySession(response.data);
+      if (!response.data.user) await fetchCurrentUser();
       setLoading(false);
     } catch (err) {
-      console.error('Login error:', err.response?.data || err.message);
-      setError(err.response?.data || err.message);
+      setError(err.message);
       setLoading(false);
       throw err;
     }
   };
 
-  // Sign-out function
-  const signOut = () => {
+  const signOut = async () => {
+    try {
+      await api.post('/logout');
+    } catch (_) {
+      /* ignore */
+    }
+    clearClientAuth();
     setCurrentUser(null);
     setUserToken(null);
     setUserRole(null);
-    localStorage.removeItem('user');
-    localStorage.removeItem('token');
-    localStorage.removeItem('userRole');
-    console.log('User signed out');
   };
 
-  // On mount, check localStorage for token and fetch user
   useEffect(() => {
-    const storedToken = localStorage.getItem('token');
-    if (storedToken) {
-      setUserToken(storedToken);
-      fetchCurrentUser(storedToken).finally(() => setLoading(false));
-    } else {
-      setLoading(false);
-    }
+    (async () => {
+      try {
+        // Prefer refresh cookie if present
+        try {
+          const refreshed = await api.post('/refresh');
+          applySession(refreshed.data);
+        } catch (_) {
+          /* no session */
+        }
+        await fetchCurrentUser();
+      } catch (_) {
+        clearClientAuth();
+        setCurrentUser(null);
+        setUserRole(null);
+        setUserToken(null);
+      } finally {
+        setLoading(false);
+      }
+    })();
   }, []);
 
   return (
@@ -116,6 +100,7 @@ export const AuthProvider = ({ children }) => {
         currentUser,
         userToken,
         userRole,
+        authLoading: loading,
         showDonorRec,
         setShowDonorRec,
         signUp,
@@ -125,7 +110,13 @@ export const AuthProvider = ({ children }) => {
         setError,
       }}
     >
-      {!loading && children}
+      {loading ? (
+        <div className="min-h-screen flex items-center justify-center text-emerald-900">Loading session…</div>
+      ) : (
+        children
+      )}
     </AuthContext.Provider>
   );
 };
+
+export const useAuth = () => useContext(AuthContext);

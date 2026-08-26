@@ -1,24 +1,20 @@
-import { useContext } from "react";
-import { Navigate } from "react-router-dom";
-import { AuthContext } from "../context/AuthContext";
+import { Navigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import PrivateRoute from './PrivateRoute';
 
-const RoleRoute = () => {
-  const { userRole } = useContext(AuthContext);
+const RoleRoute = ({ roles, children }) => {
+  const { userRole, currentUser } = useAuth();
+  const allowed = Array.isArray(roles) ? roles : [roles];
 
-  if (!userRole) return <Navigate to="/" replace />;
-
-  switch (userRole) {
-    case "donor":
-      return <Navigate to="/dashboard/donor" replace />;
-    case "recipient":
-      return <Navigate to="/dashboard/recipient" replace />;
-    case "volunteer":
-      return <Navigate to="/dashboard/volunteer" replace />;
-    case "admin":
-      return <Navigate to="/dashboard/admin" replace />;
-    default:
-      return <Navigate to="/" replace />;
-  }
+  return (
+    <PrivateRoute>
+      {!currentUser || !allowed.includes(userRole || currentUser.role) ? (
+        <Navigate to="/" replace />
+      ) : (
+        children
+      )}
+    </PrivateRoute>
+  );
 };
 
 export default RoleRoute;

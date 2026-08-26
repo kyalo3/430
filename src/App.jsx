@@ -1,22 +1,25 @@
-import './App.css'
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import { useState } from 'react';
+import './App.css';
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import { lazy, Suspense, useState } from 'react';
 import Landing from './pages/Landing';
-import ShoppingPage from './pages/ShoppingPage';
-import CollectionsPage from './pages/CollectionsPage';
-import ProductPage from './pages/ProductPage';
-import DonorDashboard from './pages/DonorDashboard';
-import RecipientDashboard from './pages/RecipientDashboard';
-import VolunteerDashboard from './pages/VolunteerDashboard';
-import AdminDashboard from './pages/AdminDashboard';
-import Reports from './pages/Reports';
+import RoleRoute from './components/RoleRoute';
+import ErrorBoundary from './components/ErrorBoundary';
 import '@fortawesome/fontawesome-free/css/all.min.css';
+
+const ShoppingPage = lazy(() => import('./pages/ShoppingPage'));
+const CollectionsPage = lazy(() => import('./pages/CollectionsPage'));
+const ProductPage = lazy(() => import('./pages/ProductPage'));
+const DonorDashboard = lazy(() => import('./pages/DonorDashboard'));
+const RecipientDashboard = lazy(() => import('./pages/RecipientDashboard'));
+const VolunteerDashboard = lazy(() => import('./pages/VolunteerDashboard'));
+const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
+const Reports = lazy(() => import('./pages/Reports'));
 
 function App() {
   const [popupType, setPopupType] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   const togglePopup = (type) => {
-    if (type === '' && isOpen){
+    if (type === '' && isOpen) {
       setPopupType(type);
       setIsOpen(!isOpen);
     } else if (type !== '' && isOpen) {
@@ -26,27 +29,72 @@ function App() {
       setIsOpen(!isOpen);
     }
   };
+
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={
-          <Landing 
-                      isOpen={isOpen}
-                      popupType={popupType}
-                      setPopupType = {setPopupType}
-                      togglePopup={togglePopup}
-                  />} />
-        <Route path="/shop" element={<ShoppingPage/>} />
-        <Route path="/shop/collection/:category"  element={<CollectionsPage/>} />
-        <Route path="/shop/collection/:category/:product/:productid"  element={<ProductPage/>} />
-        <Route path="/dashboard/donor" element={<DonorDashboard/>} />
-        <Route path="/dashboard/recipient" element={<RecipientDashboard/>} />
-        <Route path="/dashboard/volunteer" element={<VolunteerDashboard/>} />
-        <Route path="/volunteer" element={<VolunteerDashboard/>} />
-        <Route path="/dashboard/admin" element={<AdminDashboard/>} />
-        <Route path="/dashboard/reports" element={<Reports/>} />
-      </Routes>
-    </Router>
+    <ErrorBoundary>
+      <Router>
+        <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading…</div>}>
+          <Routes>
+            <Route
+              path="/"
+              element={
+                <Landing
+                  isOpen={isOpen}
+                  popupType={popupType}
+                  setPopupType={setPopupType}
+                  togglePopup={togglePopup}
+                />
+              }
+            />
+            <Route path="/shop" element={<ShoppingPage />} />
+            <Route path="/shop/collection/:category" element={<CollectionsPage />} />
+            <Route path="/shop/collection/:category/:product/:productid" element={<ProductPage />} />
+            <Route
+              path="/dashboard/donor"
+              element={
+                <RoleRoute roles={['donor']}>
+                  <DonorDashboard />
+                </RoleRoute>
+              }
+            />
+            <Route
+              path="/dashboard/recipient"
+              element={
+                <RoleRoute roles={['recipient']}>
+                  <RecipientDashboard />
+                </RoleRoute>
+              }
+            />
+            <Route
+              path="/dashboard/volunteer"
+              element={
+                <RoleRoute roles={['volunteer']}>
+                  <VolunteerDashboard />
+                </RoleRoute>
+              }
+            />
+            <Route path="/volunteer" element={<Navigate to="/dashboard/volunteer" replace />} />
+            <Route
+              path="/dashboard/admin"
+              element={
+                <RoleRoute roles={['admin']}>
+                  <AdminDashboard />
+                </RoleRoute>
+              }
+            />
+            <Route
+              path="/dashboard/reports"
+              element={
+                <RoleRoute roles={['admin']}>
+                  <Reports />
+                </RoleRoute>
+              }
+            />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </Suspense>
+      </Router>
+    </ErrorBoundary>
   );
 }
 

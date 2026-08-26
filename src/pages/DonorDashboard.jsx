@@ -1,10 +1,8 @@
 import React, { useState, useEffect, useContext, useCallback } from 'react';
-import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
+import api from '../lib/api';
 import team from '../assets/images/team.svg';
 import family from '../assets/images/family.svg';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
 
 const initialDonor = {
   id: '',
@@ -72,11 +70,8 @@ function DonorDashboard() {
 
   const fetchDonations = useCallback(async () => {
     try {
-      const token = localStorage.getItem('token');
       if (!currentUser?.id || currentUser.id === 'replace_with_real_id') return;
-      const res = await axios.get(`${API_URL}/donors/${currentUser.id}/donations/`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await api.get(`/donors/${currentUser.id}/donations/`);
       setDonations(res.data || []);
     } catch {
       setDonations([]);
@@ -85,11 +80,8 @@ function DonorDashboard() {
 
   const fetchSystemDonationCount = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const res = await axios.get(`${API_URL}/admin/donations`, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      });
-      setSystemDonationCount(Array.isArray(res.data) ? res.data.length : 0);
+      const res = await api.get('/impact/summary');
+      setSystemDonationCount(Number(res.data?.verified_fulfilments || 0));
     } catch {
       setSystemDonationCount(0);
     }
@@ -116,37 +108,32 @@ function DonorDashboard() {
 
     if (
       !donationForm.food_item.trim() ||
-      !donationForm.brand.trim() ||
       !donationForm.description.trim() ||
       !donationForm.quantity ||
       isNaN(Number(donationForm.quantity)) ||
-      Number(donationForm.quantity) < 1 ||
-      !donationForm.price ||
-      isNaN(Number(donationForm.price)) ||
-      Number(donationForm.price) < 0 ||
-      !donationForm.recipient_id.trim()
+      Number(donationForm.quantity) < 1
     ) {
-      setDonationError('Please fill in all fields with valid values. Quantity must be at least 1 and price must be 0 or more.');
+      setDonationError('Please provide item, description, and a quantity of at least 1.');
       setDonationLoading(false);
       return;
     }
 
     try {
-      const token = localStorage.getItem('token');
       if (!currentUser?.id || currentUser.id === 'replace_with_real_id') throw new Error('Invalid donor ID');
 
       const payload = {
-        ...donationForm,
+        food_item: donationForm.food_item,
+        brand: donationForm.brand,
+        description: donationForm.description,
         quantity: Number(donationForm.quantity),
         price: Number(donationForm.price),
-        donor_id: currentUser.id,
+        category: 'general',
+        unit: 'units',
       };
 
-      await axios.post(`${API_URL}/donations/`, payload, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await api.post('/donations/', payload);
 
-      setDonationSuccess('Donation added successfully.');
+      setDonationSuccess('Donation submitted as draft. An administrator will verify before matching.');
       setDonationForm({
         food_item: '',
         brand: '',
@@ -158,7 +145,7 @@ function DonorDashboard() {
       fetchDonations();
       fetchSystemDonationCount();
     } catch (err) {
-      setDonationError(err.response?.data?.detail || 'Failed to add donation');
+      setDonationError(err.response?.data?.detail || err.message || 'Failed to add donation');
     } finally {
       setDonationLoading(false);
     }
@@ -184,7 +171,6 @@ function DonorDashboard() {
     setError('');
 
     try {
-      const token = localStorage.getItem('token');
       const donorId = currentUser?.id;
       const payload = {
         first_name: form.first_name,
@@ -200,15 +186,13 @@ function DonorDashboard() {
         type_of_company: form.type_of_company,
       };
 
-      await axios.put(`${API_URL}/donors/${donorId}`, payload, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await api.put(`/donors/${donorId}`, payload);
 
       setDonor((prev) => ({ ...prev, ...payload }));
       setEditMode(false);
       setSuccess('Profile updated successfully.');
     } catch (err) {
-      setError(err.response?.data?.detail || 'Failed to update profile');
+      setError(err.response?.data?.detail || err.message || 'Failed to update profile');
     } finally {
       setLoading(false);
     }

@@ -17,18 +17,13 @@ function RegistrationForm({ handleSwitch }) {
       .required("Email address is required"),
     password: Yup.string()
       .required("Password is required")
-      .min(8, "Password must be at least 8 characters"),
+      .min(10, "Password must be at least 10 characters"),
     confirmPassword: Yup.string()
       .oneOf([Yup.ref("password"), null], "Passwords must match")
       .required("Confirm Password is required"),
     role: Yup.string()
-      .oneOf(["donor", "recipient", "volunteer", "admin"])
+      .oneOf(["donor", "recipient", "volunteer"])
       .required("Please select a role"),
-    adminCode: Yup.string().when("role", {
-      is: "admin",
-      then: (schema) => schema.required("Admin code is required"),
-      otherwise: (schema) => schema.notRequired(),
-    }),
   });
 
   /* ----------------------- SUBMIT ----------------------- */
@@ -41,11 +36,8 @@ function RegistrationForm({ handleSwitch }) {
         values.username,
         values.email,
         values.password,
-        values.role,
-        values.adminCode
+        values.role
       );
-
-      localStorage.setItem("regRole", values.role);
 
       setSuccessMsg("Registration successful!");
 
@@ -71,13 +63,12 @@ function RegistrationForm({ handleSwitch }) {
         password: "",
         confirmPassword: "",
         role: "",
-        adminCode: "",
       }}
       validationSchema={validation}
       onSubmit={handleRegister}
     >
-      {({ values, isSubmitting, isValid }) => (
-        <Form autoComplete="off">
+      {({ isSubmitting, isValid }) => (
+        <Form autoComplete="on">
           {/* Error / Success Messages */}
           {serverError && (
             <div className="mb-4 p-3 bg-red-100 text-red-700 border border-red-400 rounded">
@@ -150,31 +141,13 @@ function RegistrationForm({ handleSwitch }) {
               className="w-full bg-emerald-50 px-3 py-3 border rounded-md focus:ring-emerald-700"
             >
               <option value="">-- Choose a category --</option>
-              <option value="donor">Donor</option>
-              <option value="recipient">Recipient</option>
-              <option value="volunteer">Volunteer</option>
-              <option value="admin">Admin</option>
+              <option value="donor">Donor — share surplus resources</option>
+              <option value="recipient">Recipient — request support</option>
+              <option value="volunteer">Volunteer — help with handovers</option>
             </Field>
 
             <ErrorMessage name="role" component="div" className="text-red-500 text-sm mt-1" />
           </div>
-
-          {/* Admin Code (conditional) */}
-          {values.role === "admin" && (
-            <div className="mb-4">
-              <Field
-                type="password"
-                name="adminCode"
-                placeholder="Enter admin code"
-                className="mt-1 w-full bg-emerald-50 px-3 py-4 border rounded-md focus:ring-emerald-700"
-              />
-              <ErrorMessage
-                name="adminCode"
-                component="div"
-                className="text-red-500 text-sm mt-1"
-              />
-            </div>
-          )}
 
           {/* Submit */}
           <button

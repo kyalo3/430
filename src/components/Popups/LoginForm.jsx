@@ -5,7 +5,7 @@ import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 
 function LoginForm({ handleSwitch }) {
-    const { signIn, userRole } = useContext(AuthContext);
+    const { signIn } = useContext(AuthContext);
     const navigate = useNavigate();
     const [errorMessage, setErrorMessage] = useState('');
     const [successMessage, setSuccessMessage] = useState('');
@@ -23,21 +23,23 @@ function LoginForm({ handleSwitch }) {
             setSuccessMessage('Login successful! Redirecting...');
             resetForm();
 
-            // Wait a moment then redirect based on user role using navigate()
-            setTimeout(() => {
-                const role = localStorage.getItem('userRole');
-                if (role === 'donor') {
-                    navigate('/dashboard/donor');
-                } else if (role === 'recipient') {
-                    navigate('/dashboard/recipient');
-                } else if (role === 'volunteer') {
-                    navigate('/dashboard/volunteer');
-                } else if (role === 'admin') {
-                    navigate('/dashboard/admin');
-                } else {
-                    setSuccessMessage('Login successful! Please complete your profile.');
+            // Role comes from authenticated session (not localStorage)
+            const stored = sessionStorage.getItem('ss_last_role');
+            // Navigate using response role via a short poll of context is unreliable; use me endpoint role from signIn side effect
+            setTimeout(async () => {
+                try {
+                  const { default: api } = await import('../../lib/api');
+                  const me = await api.get('/users/me');
+                  const role = me.data?.role;
+                  if (role === 'donor') navigate('/dashboard/donor');
+                  else if (role === 'recipient') navigate('/dashboard/recipient');
+                  else if (role === 'volunteer') navigate('/dashboard/volunteer');
+                  else if (role === 'admin') navigate('/dashboard/admin');
+                  else setSuccessMessage('Login successful! Please complete your profile.');
+                } catch {
+                  setSuccessMessage('Login successful!');
                 }
-            }, 1000);
+            }, 300);
         }
         catch (error) {
             console.error('Error during signin', error);

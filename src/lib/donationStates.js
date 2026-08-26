@@ -1,0 +1,21 @@
+/** Mirrors backend donation lifecycle labels for UI badges. */
+export const DONATION_STATUSES = [
+  'draft',
+  'submitted',
+  'under_review',
+  'available',
+  'reserved',
+  'matched',
+  'pickup_scheduled',
+  'collected',
+  'in_transit',
+  'delivered',
+  'recipient_confirmed',
+  'completed',
+  'expired',
+  'cancelled',
+  'rejected',
+  'recalled',
+  'failed',
+  'disputed',
+];

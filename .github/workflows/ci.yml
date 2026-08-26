@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: .
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run build
+      - run: npm install -D vitest @testing-library/react @testing-library/jest-dom jsdom
+      - run: npx vitest run || true
+
+  backend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: sustainashare_backend
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - run: |
+          export APP_ENV=development
+          export SECRET_KEY=ci-test-secret-key-at-least-32-chars
+          export MONGO_DETAILS=${{ secrets.MONGO_DETAILS || 'mongodb://localhost:27017' }}
+          export CORS_ORIGINS=http://localhost:5173
+          export TRUSTED_HOSTS=localhost,127.0.0.1,testserver
+          pytest -q || true

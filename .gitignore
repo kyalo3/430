@@ -1,1 +1,38 @@
-node_modules
+# Dependencies & build
+node_modules/
+dist/
+build/
+coverage/
+.vite/
+*.log
+npm-debug.log*
+yarn-error.log*
+
+# Environment & secrets
+.env
+.env.*
+!.env.example
+
+# Editor / OS
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
+# Python (if running tools from monorepo root)
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Tests / caches
+.pytest_cache/
+.mypy_cache/
+.turbo/
+playwright-report/
+test-results/
+
+# Backend submodule local
+sustainashare_backend/venv/
+sustainashare_backend/.env

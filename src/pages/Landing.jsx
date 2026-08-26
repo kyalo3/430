@@ -7,61 +7,34 @@ import team from '../assets/images/team.svg'
 import family from '../assets/images/family.svg'
 import HeroesSlider from "../components/Sliders/HeroesSlider.jsx";
 import ArticleSlider from "../components/Sliders/ArticleSlider.jsx";
+import api from "../lib/api";
 
 
 export default function Landing({isOpen, popupType, togglePopup}) {
   const [activeToggle, setActiveToggle] = useState('Donors');
+  const [impact, setImpact] = useState(null);
   const RecipientsSlides = [
     {
       id: 1,
       image: '/images/ngo.png',
-      name: 'Company 1',
-      description: 'Valley Area Regional Director Food and Nutrition Services, Sutter Health',
-      testimonial: 'Copia has helped us develop a process that is doable...'
+      name: 'Community partner',
+      description: 'Verified organisational recipient',
+      testimonial: 'When listings are verified and handovers confirmed, surplus reaches people who need it — without public exposure of private circumstances.'
     },
-    {
-        id: 1,
-        image: '/images/ngo.png',
-        name: 'Company 1',
-        description: 'Valley Area Regional Director Food and Nutrition Services, Sutter Health',
-        testimonial: 'Copia has helped us develop a process that is doable...'
-      },
-      {
-        id: 1,
-        image: '/images/ngo.png',
-        name: 'Company 1',
-        description: 'Valley Area Regional Director Food and Nutrition Services, Sutter Health',
-        testimonial: 'Copia has helped us develop a process that is doable...'
-      },
-    // Add more slides as needed
   ];
 
   const DonorsSlides = [
     {
       id: 1,
       image: '/images/ngo.png',
-      name: 'Company 1',
-      description: 'Valley Area Regional Director Food and Nutrition Services, Sutter Health',
-      testimonial: 'Copia has helped us develop a process that is doable...'
+      name: 'Local surplus donor',
+      description: 'Hospitality and pantry partners',
+      testimonial: 'Listing surplus with clear status and impact receipts makes giving trustworthy and repeatable.'
     },
-    {
-        id: 1,
-        image: '/images/ngo.png',
-        name: 'Company 1',
-        description: 'Valley Area Regional Director Food and Nutrition Services, Sutter Health',
-        testimonial: 'Copia has helped us develop a process that is doable...'
-      },
-      {
-        id: 1,
-        image: '/images/ngo.png',
-        name: 'Company 1',
-        description: 'Valley Area Regional Director Food and Nutrition Services, Sutter Health',
-        testimonial: 'Copia has helped us develop a process that is doable...'
-      },
-    // Add more slides as needed
   ];
   useEffect(() => {
     window.scrollTo(0, 0);
+    api.get('/impact/summary').then((res) => setImpact(res.data)).catch(() => setImpact({ empty: true, verified_fulfilments: 0 }));
   }, []);
 
   return (
@@ -83,25 +56,33 @@ export default function Landing({isOpen, popupType, togglePopup}) {
           </div>
           <div className="container relative mx-auto">
             <div className="items-center flex flex-wrap">
-              <div className="w-full lg:w-6/12 px-4 ml-auto mr-auto text-center">
+              <div className="w-full lg:w-8/12 px-4 ml-auto mr-auto text-center">
                 <div className="pr-12">
-                  <h1 className="text-white font-semibold text-5xl">
-                    Your story starts with us
+                  <p className="text-emerald-200 uppercase tracking-wide text-sm mb-3">Sustainashare</p>
+                  <h1 className="text-white font-semibold text-4xl md:text-5xl">
+                    Turn surplus into verified community support
                   </h1>
                   <p className="mt-4 text-lg text-slate-200">
-                  SustainaShare helps businesses redistribute high-quality surplus to people in need. Help neighbors, improve profitability, show compliance, and reduce emissions all within one platform.
+                    Donors list usable resources. Recipients share needs with dignity. Volunteers complete safe handovers.
+                    Administrators verify and account for every completed journey — so waste falls and trust rises.
                   </p>
-                  <button
-                    type="button"
-                    className="w-64 mt-8 inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-4 bg-orange-500 text-m font-medium text-white hover:bg-text-inverse focus:outline-none"
-                    id="options-menu"
-                    aria-haspopup="true"
-                    aria-expanded="true"
-                    onClick={() => togglePopup('register')}
-                  >
-                    Let&apos;s Connect
-                  </button>
-                  <AuthModal isOpen={isOpen} togglePopup={togglePopup} popupType={popupType}zzzz/>
+                  <p className="mt-3 text-sm text-slate-300">
+                    Exact addresses and sensitive needs stay private. Impact figures only count confirmed fulfilments.
+                  </p>
+                  <div className="mt-8 flex flex-wrap gap-3 justify-center">
+                    <button type="button" className="px-5 py-3 bg-orange-500 text-white rounded-md font-medium" onClick={() => togglePopup('register')}>Donate resources</button>
+                    <button type="button" className="px-5 py-3 bg-white/10 text-white border border-white/40 rounded-md font-medium" onClick={() => togglePopup('register')}>Request support</button>
+                    <button type="button" className="px-5 py-3 bg-emerald-600 text-white rounded-md font-medium" onClick={() => togglePopup('register')}>Volunteer</button>
+                    <button type="button" className="px-5 py-3 bg-transparent text-white border border-white/40 rounded-md font-medium" onClick={() => togglePopup('register')}>Partner with us</button>
+                  </div>
+                  <div className="mt-6 text-slate-200 text-sm">
+                    {impact?.empty || !impact?.verified_fulfilments ? (
+                      <span>Verified impact will appear here after the first confirmed fulfilment — we never invent counters.</span>
+                    ) : (
+                      <span>{impact.verified_fulfilments} verified fulfilments · {impact.quantity_redistributed} units redistributed (see methodology in docs)</span>
+                    )}
+                  </div>
+                  <AuthModal isOpen={isOpen} togglePopup={togglePopup} popupType={popupType} />
                 </div>
               </div>
             </div>
