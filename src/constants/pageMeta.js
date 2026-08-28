@@ -48,6 +48,10 @@ export const PAGE_META = {
     description:
       'How Sustainashare handles donation quality, recipient dignity, volunteer safety, and verified impact — without public recipient profiles.',
   },
+  verifyEmail: {
+    title: 'Verify your email | Sustainashare',
+    description: 'Confirm your Sustainashare account email when verification is required before logging in.',
+  },
   privacy: {
     title: 'Privacy and account data | Sustainashare',
     description: 'Export your data, manage optional publication consent, and anonymise your Sustainashare account.',
@@ -58,6 +62,7 @@ export function metaForPath(pathname) {
   if (pathname === '/') return PAGE_META.home;
   if (pathname === '/faqs') return PAGE_META.faqs;
   if (pathname === '/guidance') return PAGE_META.guidance;
+  if (pathname === '/verify-email') return PAGE_META.verifyEmail;
   if (pathname === '/account/privacy') return PAGE_META.privacy;
   if (pathname === '/shop') return PAGE_META.shop;
   if (pathname.startsWith('/shop/collection/') && pathname.split('/').length > 5) return PAGE_META.product;

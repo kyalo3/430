@@ -41,7 +41,10 @@ Verified donor lists a suitable resource → Sustainashare connects it to a legi
 | Partner organisations + membership | Inputs: partner organisations | Bulk surplus / logistics without public recipient exposure | Implemented (pending admin verification) |
 | Explainable match suggestions in recipient dashboard | Activities: matching | Successful matches, trust | Implemented (rules_v1 in UI) |
 | Volunteer service area / capacity | Activities: delivery | Safer assignments | Implemented |
-| Operational time/rate metrics | Outputs → outcomes | Measurable coordination | Implemented (history-based, nullable) |
+| Load class + pickup windows + capacity gates | Activities: delivery / logistics | Fewer failed handovers | Implemented |
+| Partner logistics assign | Activities: delivery | Bulk / Mode B fulfilment | Implemented |
+| Organisation impact pack | Outputs → outcomes | CSR-ready verified evidence | Implemented |
+| Email/SMS notification adapters | In-use enrichment | Reduce silent journey death | Implemented (flagged) |
 | Recipient confirmation | Activities: confirmation | Verifiable completion | Implemented |
 | Impact records from completed journeys only | Outputs → outcomes | Measurable, honest impact | Implemented |
 | HttpOnly session cookies + RBAC | Trust / safety | Trustworthy platform | Implemented |
@@ -49,7 +52,7 @@ Verified donor lists a suitable resource → Sustainashare connects it to a legi
 | Self-service export and anonymisation | Dignity / Better Data Deal | Trust, safer participation | Implemented |
 | Surplus catalogue redaction | Dignity / non-surveillance | Recipient privacy | Implemented |
 | Community safety guidance | Activities: participation | Safer coordination | Implemented |
-| Privacy settings (consent, export, delete) | Better Data Deal | Trust, purpose limitation | Implemented |
+| Official SDG/geography reference (GADM, OFF, World Bank) | Activities: matching / partner reporting | Trust, measurable coordination | Implemented (context only) |
 | Audit events for admin & lifecycle changes | Accountability | Transparent giving | Implemented |
 | Health checks, CI, ops docs | Platform reliability | Sustained coordination | Implemented |
 | Public recipient profiles / leaderboards | — | **Not appropriate** | Explicitly rejected |
@@ -61,3 +64,5 @@ Verified donor lists a suitable resource → Sustainashare connects it to a legi
 **Verified successful fulfilments per active service area per week.**
 
 Only completed, recipient-confirmed (or admin-verified) journeys count. No invented counters, meal conversions, or carbon claims without documented methodology.
+
+For investor/funder diligence language (category, who pays, logistics, use of funds), see [FUNDER_ONE_PAGER.md](./FUNDER_ONE_PAGER.md).

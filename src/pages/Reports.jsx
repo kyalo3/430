@@ -3,6 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import api from '../lib/api';
 import BrandLogo from '../components/BrandLogo';
+import { useReferenceData } from '../hooks/useReferenceData';
+import { SdgContextCard } from '../components/dashboard/ReferenceFields';
 
 function toRows(data) {
   if (!Array.isArray(data)) return [];
@@ -69,8 +71,10 @@ export default function Reports() {
   const { signOut } = useContext(AuthContext);
   const navigate = useNavigate();
   const [reportData, setReportData] = useState(null);
+  const [syncing, setSyncing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const { sdg, refreshSdg } = useReferenceData({ includeSdg: true });
 
   const fetchReport = useCallback(async () => {
     setLoading(true);
@@ -89,8 +93,7 @@ export default function Reports() {
         impactCount: impact.data?.count || 0,
       });
     } catch (err) {
-      setError(err.message || 'Failed to load reports');
-      setReportData(null);
+      setError('Failed to load reports');
     } finally {
       setLoading(false);
     }
@@ -99,6 +102,18 @@ export default function Reports() {
   useEffect(() => {
     fetchReport();
   }, [fetchReport]);
+
+  const syncOfficial = async () => {
+    setSyncing(true);
+    try {
+      await api.post('/platform/reference/sync');
+      await refreshSdg();
+    } catch (err) {
+      setError(err.message || 'Unable to refresh official context');
+    } finally {
+      setSyncing(false);
+    }
+  };
 
   const handleLogout = async () => {
     await signOut();
@@ -148,6 +163,8 @@ export default function Reports() {
           <div className="rounded-2xl border border-emerald-100 bg-white p-12 text-center text-emerald-800">Loading reports…</div>
         ) : reportData ? (
           <div className="space-y-6">
+            <SdgContextCard sdg={sdg} onSync={syncOfficial} syncing={syncing} />
+
             <section className="rounded-2xl border border-emerald-100 bg-white p-6">
               <h2 className="font-display text-xl font-semibold text-emerald-950">Summary</h2>
               <ul className="mt-3 grid gap-2 text-sm text-emerald-900 sm:grid-cols-2">

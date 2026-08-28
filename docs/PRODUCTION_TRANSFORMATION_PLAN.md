@@ -70,7 +70,12 @@ Living plan. Update as phases complete.
 ## Phase 5 — Visibility & growth
 
 - [x] Verified impact API + methodology notes
-- [x] Privacy settings UI, self-service anonymisation, catalogue redaction, login lockout
+- [x] Official reference data sync (Kenya counties bundled, World Bank cache)
+- [x] Category-aware matching suggest + claim reasons from rules engine
+- [x] County place normaliser (privacy-safe; OSM still deferred)
+- [x] Email verify endpoint when `VERIFICATION_REQUIRED=true`
+- [x] Email verify SPA (`/verify-email`) + register/login gating when verification is on
+- [x] Playwright e2e (landing/guidance/verify; optional API suite with `E2E_API=1`)
 - [x] Community safety guidance (no public recipient profiles)
 - [x] Cookie-only SPA session (access JWT not kept in memory or localStorage)
 - [x] Kenya compliance checklist (non-claiming)
@@ -89,3 +94,10 @@ Living plan. Update as phases complete.
 ## Explicitly deferred / not appropriate
 
 Microservices, blockchain, payments, opaque AI matching, public recipient profiles, gamified vulnerability, carbon accounting without methodology.
+
+## 90-day ops roadmap (see docs/IMPROVEMENT_BACKLOG.md)
+
+- [x] Time windows + load class + capacity gates
+- [x] Email/SMS adapters (feature-flagged; SMTP owner-configured)
+- [x] Partner logistics assign + organisation impact pack
+- [x] Volunteer mobile fulfilment polish (sticky progress)

@@ -32,6 +32,19 @@ Statuses enforced server-side (see `THEORY_OF_CHANGE.md`).
 - `POST /storage/intent` — 501 until `FEATURE_OBJECT_STORAGE=true` (never stores files in Mongo)
 - `GET /integrations/webhooks` — 404 until `FEATURE_WEBHOOKS=true`
 
+## Reference data (public context)
+
+- `GET /platform/reference/catalog` — which public datasets we use and how they sync
+- `GET /platform/reference/service-areas` — 47 Kenya counties (GADM-aligned, bundled)
+- `GET /platform/reference/food-categories` — Open Food Facts language subset
+- `GET /platform/reference/sdg-context` — World Bank undernourishment snapshot (not Sustainashare impact)
+- `POST /platform/reference/normalize-place` — map free text to a Kenya county (no exact geocoding)
+- `POST /platform/reference/sync` — admin refresh of the World Bank cache
+- `POST /fulfilments/{id}/assign-partner` — Mode B partner logistics assignment
+- `GET /impact/organisation/{org_id}` — verified impact pack for org members/admins
+- Donation create accepts `load_class`, `logistics_mode`, `window_start`, `window_end`
+- `FEATURE_EMAIL` / `FEATURE_SMS` + SMTP_* for outbound lifecycle alerts
+
 ## Privacy and administration
 
 - `GET /platform/privacy-notice` — public purposes and non-goals

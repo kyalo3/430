@@ -18,8 +18,8 @@ Reference framework: *Winning Through Platforms* (Ted Moser, Charlotte Bloom, Om
 |------|---------|------------|-----------|--------|----------------|
 | Brand-Demand Lead Engine | **Now** | Understand mission before signup | Landing theory-of-change narrative | Implemented | Qualified registrations |
 | Lead-to-Sale Smoothing → registration-to-first-contribution | **Now** | Short register → first action | Progressive profile; protected dashboards | Implemented | % users completing first contribution in 7d |
-| Success to Momentum | **Next** | Repeat giving/volunteering | Impact receipts; reminders | Next | 30-day repeat rate |
-| In-Use Enrichment | **Now** | Lifecycle clarity | Status machine + notifications + match reasons | Implemented | Notification relevance |
+| Success to Momentum | **Now** | Repeat giving/volunteering | Impact receipts; org impact pack; list-again CTA | Implemented (v1) | 30-day repeat rate |
+| In-Use Enrichment | **Now** | Lifecycle clarity | Status machine + in-app + FEATURE_EMAIL/SMS | Implemented (flagged email) | Notification relevance |
 | Catalytic Community | **Now** | Safe community learning | Guidance page; no public recipient profiles | Implemented (conservative) | Guidance visits; zero public recipient PII |
 | Customer Renewal and Expansion | **Now** | Partner / org growth | Org membership + admin verification | Implemented (v1) | Active verified partner orgs |
 
@@ -28,7 +28,7 @@ Reference framework: *Winning Through Platforms* (Ted Moser, Charlotte Bloom, Om
 | Play | Horizon | User value | Mechanism | Status | Success metric |
 |------|---------|------------|-----------|--------|----------------|
 | Reimagined Flows | **Now** | End-to-end redistribution | Explicit donation & need state machines | Implemented | Fulfilment rate |
-| Extended Ecosystems | **Now** | NGO / retail / logistics | Versioned API + webhook stubs behind flags | Foundation shipped | Partner API adoption |
+| Extended Ecosystems | **Now** | NGO / retail / logistics | Partner assign + org impact API; webhook stubs flagged | Implemented (v1) | Partner-sourced fulfilments |
 | Better Data Deal | **Now** | Dignity & control | Consent, export/delete, minimisation | Implemented | Completion of privacy workflows |
 | Brands Get Brains | **Now** | Assisted matching | Explainable rules in recipient UI; AI deferred | Rules now; AI later | Match acceptance rate |
 | Reality Shifts | **N/A** | — | No speculative AI branding | Not currently appropriate | — |

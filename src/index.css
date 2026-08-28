@@ -45,6 +45,18 @@
   .hero-fade-in-delay-2 {
     animation: hero-fade-in 1s ease-out 0.28s both;
   }
+
+  .dashboard-shell {
+    background: #eef5f0;
+  }
+
+  .dashboard-shell-grid {
+    display: none;
+  }
+
+  .dashboard-hero-img {
+    /* no motion on compact dashboards */
+  }
 }
 
 @keyframes hero-kenburns {

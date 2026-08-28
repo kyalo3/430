@@ -41,6 +41,7 @@ const ROLES = [
 
 export default function Landing({ isOpen, popupType, togglePopup }) {
   const [impact, setImpact] = useState(null);
+  const [coverage, setCoverage] = useState(null);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -49,6 +50,10 @@ export default function Landing({ isOpen, popupType, togglePopup }) {
       .get('/impact/summary')
       .then((res) => setImpact(res.data))
       .catch(() => setImpact({ empty: true, verified_fulfilments: 0 }));
+    api
+      .get('/platform/reference/service-areas')
+      .then((res) => setCoverage({ count: res.data?.count || 0 }))
+      .catch(() => setCoverage(null));
   }, []);
 
   return (
@@ -128,7 +133,12 @@ export default function Landing({ isOpen, popupType, togglePopup }) {
           <div className="grid gap-6 sm:grid-cols-3">
             {[
               { title: 'Privacy by design', body: 'Sensitive needs stay off public pages.' },
-              { title: 'Verified journeys', body: 'Listings cannot skip review steps.' },
+              {
+                title: 'Service areas ready',
+                body: coverage?.count
+                  ? `${coverage.count} Kenya counties available for approximate matching.`
+                  : 'County-level matching without exact public addresses.',
+              },
               { title: 'Honest impact', body: 'Only recipient-confirmed journeys count.' },
             ].map((item) => (
               <div key={item.title} className="text-center sm:text-left">

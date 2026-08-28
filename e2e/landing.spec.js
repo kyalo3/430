@@ -12,3 +12,9 @@ test('guidance describes safety without exposing recipients', async ({ page }) =
   await expect(page.getByRole('heading', { name: /Safety and participation guidance/i })).toBeVisible();
   await expect(page.getByText(/deservingness/i)).toBeVisible();
 });
+
+test('verify email page is reachable without inventing impact', async ({ page }) => {
+  await page.goto('/verify-email');
+  await expect(page.getByRole('heading', { name: /Verify your email/i })).toBeVisible();
+  await expect(page.getByLabel(/Email/i)).toBeVisible();
+});

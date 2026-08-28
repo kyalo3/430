@@ -19,6 +19,7 @@ const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
 const Reports = lazy(() => import('./pages/Reports'));
 const AccountPrivacy = lazy(() => import('./pages/AccountPrivacy'));
 const GuidancePage = lazy(() => import('./pages/GuidancePage'));
+const VerifyEmail = lazy(() => import('./pages/VerifyEmail'));
 
 function App() {
   const [popupType, setPopupType] = useState('');
@@ -55,6 +56,7 @@ function App() {
             <Route path="/shop" element={<ShoppingPage />} />
             <Route path="/faqs" element={<FaqsPage />} />
             <Route path="/guidance" element={<GuidancePage />} />
+            <Route path="/verify-email" element={<VerifyEmail />} />
             <Route
               path="/account/privacy"
               element={

@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
@@ -52,6 +52,9 @@ function LoginForm({ handleSwitch }) {
       } else if (error.message) {
         message = error.message;
       }
+      if (error.response?.status === 403 && /email verification/i.test(String(message))) {
+        message = `${message}. Open Verify email to enter your code, then try again.`;
+      }
       setErrorMessage(message);
       setPendingRedirect(false);
       setSubmitting(false);
@@ -71,7 +74,14 @@ function LoginForm({ handleSwitch }) {
         <Form className="space-y-4" autoComplete="on" noValidate>
           {errorMessage && (
             <div role="alert" className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-              {errorMessage}
+              <p>{errorMessage}</p>
+              {/email verification/i.test(errorMessage) && (
+                <p className="mt-2">
+                  <Link to="/verify-email" className="font-semibold underline underline-offset-2">
+                    Verify email
+                  </Link>
+                </p>
+              )}
             </div>
           )}
           {successMessage && (

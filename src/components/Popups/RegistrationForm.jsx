@@ -84,6 +84,12 @@ function RegistrationForm({ handleSwitch }) {
     setSuccessMsg('');
     try {
       const user = await signUp(values.username, values.email, values.password, values.role);
+      if (user?.needsVerification) {
+        setSuccessMsg('Account created. Confirm your email before logging in.');
+        actions.resetForm();
+        navigate(`/verify-email?email=${encodeURIComponent(values.email)}`, { replace: true });
+        return;
+      }
       setSuccessMsg('Account created. Taking you to your dashboard…');
       setPendingRedirect(true);
       const path = dashboardPathForRole(user?.role);

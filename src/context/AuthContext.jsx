@@ -52,7 +52,14 @@ export const AuthProvider = ({ children }) => {
 
   const signUp = async (username, email, password, role) => {
     try {
-      await api.post('/register', { user: { username, email, role, password } });
+      const registered = await api.post('/register', { user: { username, email, role, password } });
+      const payload = registered.data || {};
+      if (payload.verification_required && payload.email_verified === false) {
+        return {
+          ...payload,
+          needsVerification: true,
+        };
+      }
       const user = await signIn(username, password);
       setShowDonorRec(true);
       return user;

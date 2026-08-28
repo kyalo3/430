@@ -3,8 +3,13 @@ import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import api from '../lib/api';
 import DashboardShell from '../components/dashboard/DashboardShell';
+import DashboardHero from '../components/dashboard/DashboardHero';
 import StatusPill from '../components/dashboard/StatusPill';
+import DataBreakdown from '../components/dashboard/DataBreakdown';
 import { nextActions } from '../lib/donationStates';
+import { formatWhen } from '../lib/dashboardData';
+import { useReferenceData } from '../hooks/useReferenceData';
+import { SdgContextCard } from '../components/dashboard/ReferenceFields';
 
 const TABS = [
   { id: 'overview', label: 'Overview' },
@@ -31,13 +36,6 @@ const NEED_NEXT = {
 };
 
 const REASON_STATUSES = new Set(['rejected', 'cancelled', 'disputed']);
-
-function formatWhen(value) {
-  if (!value) return '—';
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return String(value);
-  return date.toLocaleString();
-}
 
 function ReasonDialog({ title, confirmLabel, onConfirm, onClose }) {
   const [reason, setReason] = useState('');
@@ -104,6 +102,8 @@ export default function AdminDashboard() {
   const [roleFilter, setRoleFilter] = useState('all');
   const [pendingAction, setPendingAction] = useState(null);
   const [busyId, setBusyId] = useState('');
+  const [syncing, setSyncing] = useState(false);
+  const { sdg, categoryLabel, refreshSdg } = useReferenceData({ includeSdg: true });
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -146,6 +146,12 @@ export default function AdminDashboard() {
       acc[role] = (acc[role] || 0) + 1;
       return acc;
     }, {});
+    const needingLogistics = donations.filter(
+      (d) =>
+        ['matched', 'pickup_scheduled'].includes(d.status) &&
+        !d.volunteer_id &&
+        !d.logistics_org_id,
+    ).length;
     return {
       users: users.length,
       donors: byRole.donor || 0,
@@ -155,10 +161,17 @@ export default function AdminDashboard() {
       suspended: users.filter((u) => u.status === 'suspended').length,
       donations: donations.length,
       pendingReview: donations.filter((d) => ['submitted', 'under_review'].includes(d.status)).length,
+      available: donations.filter((d) => d.status === 'available').length,
+      inHandover: donations.filter((d) =>
+        ['matched', 'pickup_scheduled', 'collected', 'in_transit', 'delivered'].includes(d.status),
+      ).length,
+      needingLogistics,
       requests: requests.length,
       impact: impact.count || 0,
+      partners: orgs.length,
+      partnersVerified: orgs.filter((o) => o.status === 'verified').length,
     };
-  }, [users, donations, requests, impact]);
+  }, [users, donations, requests, impact, orgs]);
 
   const filteredUsers = useMemo(() => {
     const q = userQuery.trim().toLowerCase();
@@ -223,6 +236,19 @@ export default function AdminDashboard() {
     runAction(() => api.put(`/donation-requests/${req.id}/status`, { status }));
   };
 
+  const syncOfficial = async () => {
+    setSyncing(true);
+    try {
+      await api.post('/platform/reference/sync');
+      await refreshSdg();
+      setNotice('Official SDG context refreshed.');
+    } catch (err) {
+      setError(err.message || 'Unable to sync official data');
+    } finally {
+      setSyncing(false);
+    }
+  };
+
   return (
     <DashboardShell
       wide
@@ -234,35 +260,33 @@ export default function AdminDashboard() {
       }
       onSignOut={handleLogout}
     >
-        <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <p className="text-sm font-bold uppercase tracking-[0.14em] text-orange-600">Operations</p>
-            <h1 className="font-display text-3xl font-semibold text-emerald-950 sm:text-4xl">Admin console</h1>
-            <p className="mt-2 max-w-xl text-sm text-emerald-800/80">
-              Live platform data. New administrators are created with the bootstrap script — public register cannot create admin accounts.
-            </p>
-          </div>
+        <DashboardHero
+          role="admin"
+          eyebrow="Operations"
+          title="Admin console"
+          subtitle="Live platform data. New administrators are created with the bootstrap script — public register cannot create admin accounts."
+        >
           <button
             type="button"
             onClick={load}
-            className="rounded-lg border border-emerald-200 bg-white px-4 py-2 text-sm font-semibold text-emerald-900 hover:bg-emerald-50"
+            className="min-h-10 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-900 hover:bg-emerald-100"
           >
             Refresh
           </button>
-        </div>
+        </DashboardHero>
 
         {error && (
-          <div role="alert" className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+          <div role="alert" className="mb-4 mt-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
             {error}
           </div>
         )}
         {notice && (
-          <div role="status" className="mb-4 rounded-xl border border-emerald-200 bg-white px-4 py-3 text-sm text-emerald-800">
+          <div role="status" className="mb-4 mt-6 rounded-xl border border-emerald-200 bg-white/90 px-4 py-3 text-sm text-emerald-800">
             {notice}
           </div>
         )}
 
-        <div className="mb-6 flex flex-wrap gap-2" role="tablist" aria-label="Admin sections">
+        <div className="mb-4 mt-4 flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:mb-6 sm:mt-6 sm:flex-wrap" role="tablist" aria-label="Admin sections">
           {TABS.map((item) => (
             <button
               key={item.id}
@@ -270,7 +294,7 @@ export default function AdminDashboard() {
               role="tab"
               aria-selected={tab === item.id}
               onClick={() => setTab(item.id)}
-              className={`rounded-full px-4 py-2 text-sm font-semibold ${
+              className={`min-h-10 shrink-0 rounded-full px-4 py-2 text-sm font-semibold ${
                 tab === item.id ? 'bg-emerald-800 text-white' : 'bg-white text-emerald-900 hover:bg-emerald-50'
               }`}
             >
@@ -285,11 +309,12 @@ export default function AdminDashboard() {
           <>
             {tab === 'overview' && (
               <section className="space-y-6">
+                <SdgContextCard sdg={sdg} onSync={syncOfficial} syncing={syncing} compact />
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                   {[
                     { label: 'System', value: health?.status === 'ready' ? 'Ready' : 'Not ready', hint: `Mongo ${health?.mongo || 'unknown'}` },
-                    { label: 'Users', value: counts.users, hint: `${counts.suspended} suspended` },
-                    { label: 'Donations', value: counts.donations, hint: `${counts.pendingReview} awaiting review` },
+                    { label: 'Users', value: counts.users, hint: `${counts.suspended} suspended · ${counts.admins} admins` },
+                    { label: 'Donations', value: counts.donations, hint: `${counts.pendingReview} review · ${counts.available} available` },
                     { label: 'Verified impact', value: counts.impact, hint: 'Confirmed fulfilments only' },
                   ].map((card) => (
                     <article key={card.label} className="rounded-2xl border border-emerald-100 bg-white p-5">
@@ -297,6 +322,19 @@ export default function AdminDashboard() {
                       <p className="mt-2 font-display text-3xl font-semibold text-emerald-950">{card.value}</p>
                       <p className="mt-1 text-sm text-emerald-800/70">{card.hint}</p>
                     </article>
+                  ))}
+                </div>
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                  {[
+                    ['In handover', counts.inHandover],
+                    ['Need logistics', counts.needingLogistics],
+                    ['Partners', `${counts.partnersVerified}/${counts.partners}`],
+                    ['Open needs', counts.requests],
+                  ].map(([label, value]) => (
+                    <div key={label} className="rounded-xl border border-emerald-100 bg-white px-4 py-3 text-sm">
+                      <span className="text-emerald-800/70">{label}</span>
+                      <span className="ml-2 font-semibold text-emerald-950">{value}</span>
+                    </div>
                   ))}
                 </div>
                 {ops && !ops.empty && (
@@ -313,13 +351,18 @@ export default function AdminDashboard() {
                     ))}
                   </div>
                 )}
-                {ops?.methodology && <p className="text-xs text-emerald-800/70">{ops.methodology}</p>}
+                {ops?.by_status && (
+                  <article className="rounded-2xl border border-emerald-100 bg-white p-5">
+                    <DataBreakdown title="Listings by status" counts={ops.by_status} />
+                    {ops?.methodology && <p className="mt-3 text-xs text-emerald-800/70">{ops.methodology}</p>}
+                  </article>
+                )}
                 <div className="grid gap-4 sm:grid-cols-4">
                   {[
                     ['Donors', counts.donors],
                     ['Recipients', counts.recipients],
                     ['Volunteers', counts.volunteers],
-                    ['Open needs', counts.requests],
+                    ['Sampled listings', ops?.listings_sampled ?? counts.donations],
                   ].map(([label, value]) => (
                     <div key={label} className="rounded-2xl bg-white/80 px-4 py-3 text-sm">
                       <span className="text-emerald-800/70">{label}</span>
@@ -327,6 +370,24 @@ export default function AdminDashboard() {
                     </div>
                   ))}
                 </div>
+                <article className="rounded-2xl border border-emerald-100 bg-white p-5">
+                  <h2 className="font-display text-xl font-semibold text-emerald-950">Recent verified impact</h2>
+                  <p className="mt-1 text-sm text-emerald-800/75">Newest confirmed fulfilments only.</p>
+                  {(impact.items || []).length === 0 ? (
+                    <EmptyState message="No verified impact records yet." />
+                  ) : (
+                    <ul className="mt-3 divide-y divide-emerald-50">
+                      {(impact.items || []).slice(0, 8).map((row) => (
+                        <li key={row.id || row.donation_id} className="flex flex-wrap items-center justify-between gap-2 py-2.5 text-sm">
+                          <span className="font-semibold text-emerald-950">
+                            {row.quantity} {row.unit} · {categoryLabel(row.category)}
+                          </span>
+                          <span className="text-xs text-emerald-700/70">{formatWhen(row.completed_at)}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </article>
                 <article className="rounded-2xl border border-emerald-100 bg-white p-6">
                   <h2 className="font-display text-xl font-semibold text-emerald-950">Review queue</h2>
                   <p className="mt-1 text-sm text-emerald-800/75">Submitted listings must be verified before they become available.</p>
@@ -531,9 +592,11 @@ export default function AdminDashboard() {
                             <th className="px-2 py-2">Item</th>
                             <th className="px-2 py-2">Qty</th>
                             <th className="px-2 py-2">Status</th>
+                            <th className="px-2 py-2">Load</th>
                             <th className="px-2 py-2">Location</th>
                             <th className="px-2 py-2">Updated</th>
                             <th className="px-2 py-2">Moderate</th>
+                            <th className="px-2 py-2">Logistics</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -541,13 +604,17 @@ export default function AdminDashboard() {
                             <tr key={d.id} className="border-t border-emerald-50">
                               <td className="px-2 py-3">
                                 <div className="font-semibold text-emerald-950">{d.food_item || d.title || 'Untitled'}</div>
-                                <div className="text-xs text-emerald-800/70">{d.category}</div>
+                                <div className="text-xs text-emerald-800/70">{categoryLabel(d.category)}</div>
                               </td>
                               <td className="px-2 py-3">
                                 {d.quantity} {d.unit}
                               </td>
                               <td className="px-2 py-3">
                                 <StatusPill value={d.status} />
+                              </td>
+                              <td className="px-2 py-3 text-xs text-emerald-800/80">
+                                {d.load_class || 'small'}
+                                {d.logistics_mode ? ` · ${d.logistics_mode}` : ''}
                               </td>
                               <td className="px-2 py-3 text-emerald-800/80">{d.approx_location || '—'}</td>
                               <td className="px-2 py-3 text-xs text-emerald-700/70">{formatWhen(d.updated_at || d.created_at)}</td>
@@ -583,6 +650,40 @@ export default function AdminDashboard() {
                                   ))}
                                 </select>
                               </td>
+                              <td className="px-2 py-3">
+                                {['matched', 'pickup_scheduled'].includes(d.status) && !d.volunteer_id && !d.logistics_org_id ? (
+                                  <select
+                                    className="max-w-[9rem] rounded-md border border-emerald-200 px-2 py-1 text-xs"
+                                    defaultValue=""
+                                    disabled={busyId === d.id}
+                                    onChange={(e) => {
+                                      const organisation_id = e.target.value;
+                                      if (!organisation_id) return;
+                                      setBusyId(d.id);
+                                      runAction(() =>
+                                        api.post(`/fulfilments/${d.id}/assign-partner`, {
+                                          organisation_id,
+                                          reason: 'Admin partner logistics assignment',
+                                        }),
+                                      );
+                                      e.target.value = '';
+                                    }}
+                                  >
+                                    <option value="">Assign partner…</option>
+                                    {orgs
+                                      .filter((o) => o.status === 'verified')
+                                      .map((o) => (
+                                        <option key={o.id} value={o.id}>
+                                          {o.name}
+                                        </option>
+                                      ))}
+                                  </select>
+                                ) : (
+                                  <span className="text-xs text-emerald-700/70">
+                                    {d.logistics_org_id ? 'Partner set' : d.volunteer_id ? 'Volunteer' : '—'}
+                                  </span>
+                                )}
+                              </td>
                             </tr>
                           ))}
                         </tbody>
@@ -617,7 +718,7 @@ export default function AdminDashboard() {
                               <td className="px-2 py-3">
                                 <div className="font-semibold text-emerald-950">{req.item}</div>
                                 <div className="text-xs text-emerald-800/70">
-                                  qty {req.quantity} · {req.approx_location || 'area private'}
+                                  qty {req.quantity} · {categoryLabel(req.category)} · {req.approx_location || 'area private'}
                                 </div>
                               </td>
                               <td className="px-2 py-3 capitalize">{req.urgency}</td>
